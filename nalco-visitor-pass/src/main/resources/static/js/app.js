@@ -1064,6 +1064,15 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     }
 
+    // Brand link redirects to Home page
+    const brandLink = document.getElementById('nav-brand-link');
+    if (brandLink) {
+      brandLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigate('home');
+      });
+    }
+
     // FORGOT PASSWORD / PASSWORD RESET VIA OTP
     const forgotLink = document.getElementById('link-forgot-pass');
     const backToLoginLink = document.getElementById('btn-back-to-login');
