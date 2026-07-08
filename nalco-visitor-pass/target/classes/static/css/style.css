@@ -211,10 +211,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-links {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  list-style: none;
+  display: none !important;
 }
 
 .nav-links a {
