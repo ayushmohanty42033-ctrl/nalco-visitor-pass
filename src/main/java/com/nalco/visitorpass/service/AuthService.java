@@ -195,9 +195,55 @@ public class AuthService {
         }
 
         if (userOpt.isEmpty()) {
-            response.put("success", false);
-            response.put("message", "The identity (" + searchIdentifier + ") verified by Firebase is not registered in our system. Please sign up or register first.");
-            return response;
+            // Auto-register visitor if authenticated via Firebase
+            String name = "Social User";
+            if (FirebaseConfig.isInitialized()) {
+                try {
+                    FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(firebaseIdToken);
+                    if (decodedToken.getName() != null && !decodedToken.getName().trim().isEmpty()) {
+                        name = decodedToken.getName();
+                    }
+                } catch (Exception e) {
+                    // Ignore and use default
+                }
+            } else {
+                if (email != null && email.contains("@")) {
+                    name = email.split("@")[0];
+                    name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                }
+            }
+
+            String regEmail = (email != null && !email.trim().isEmpty()) ? email : "noemail-" + java.util.UUID.randomUUID().toString().substring(0, 8) + "@nalco.com";
+            String regMobile = (phoneNumber != null && !phoneNumber.trim().isEmpty()) ? phoneNumber : "99" + java.util.UUID.randomUUID().toString().replaceAll("[^0-9]", "").substring(0, 8);
+            if (regMobile.length() < 10) {
+                regMobile = regMobile + "0000000000".substring(0, 10 - regMobile.length());
+            }
+
+            if (regMobile.startsWith("+91")) {
+                regMobile = regMobile.substring(3);
+            } else if (regMobile.startsWith("91") && regMobile.length() == 12) {
+                regMobile = regMobile.substring(2);
+            }
+
+            if (userRepository.findByMobile(regMobile).isPresent()) {
+                regMobile = "9" + java.util.UUID.randomUUID().toString().replaceAll("[^0-9]", "").substring(0, 9);
+            }
+
+            User newUser = new User(regEmail, regMobile, passwordEncoder.encode(java.util.UUID.randomUUID().toString()), "ROLE_VISITOR");
+            userRepository.save(newUser);
+
+            Visitor newVisitor = new Visitor();
+            newVisitor.setUser(newUser);
+            newVisitor.setFullName(name);
+            newVisitor.setGovtIdType("Aadhaar");
+            newVisitor.setGovtIdNumber("Pending Verification");
+            newVisitor.setCompany("Personal");
+            newVisitor.setAddress("Please update profile");
+            newVisitor.setEmergencyContact("9999999999");
+            visitorRepository.save(newVisitor);
+
+            userOpt = Optional.of(newUser);
+            System.out.println("Auto-registered Firebase OAuth visitor: " + name + " (" + regEmail + ")");
         }
 
         User user = userOpt.get();

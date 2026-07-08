@@ -1,0 +1,17 @@
+# Ignore Firebase Private credentials
+*firebase-service-account.json
+firebase-service-account.json
+**/firebase-service-account.json
+
+# Maven build outputs
+target/
+**/target/
+
+# Local databases
+data/
+**/data/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
