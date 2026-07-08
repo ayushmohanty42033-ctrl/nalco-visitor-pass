@@ -234,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
       mainNav.innerHTML = `
         <li><a href="#" class="nav-link" data-view="home">Home</a></li>
         <li><a href="#" class="nav-link" data-view="${dashView}">Dashboard</a></li>
-        <li><a href="#" class="nav-link" data-view="guard">Checkpoint</a></li>
       `;
       authBox.innerHTML = `
         <button class="btn-secondary" id="btn-header-logout" style="padding:0.5rem 1rem;">Logout</button>
@@ -249,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><a href="#" class="nav-link active" data-view="home">Home</a></li>
         <li><a href="#" class="nav-link" data-view="register">Apply Pass</a></li>
         <li><a href="#" class="nav-link" data-view="login">Sign In</a></li>
-        <li><a href="#" class="nav-link" data-view="guard">Security Checkpoint</a></li>
       `;
       authBox.innerHTML = `
         <a href="#" class="btn-primary" data-view="login">Sign In</a>
