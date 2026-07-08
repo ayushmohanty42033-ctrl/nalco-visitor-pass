@@ -969,6 +969,66 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: underline;
 }
 
+/* Social Auth Styles */
+.social-auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.25rem 0;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.social-auth-divider::before,
+.social-auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--color-border);
+}
+.social-auth-divider:not(:empty)::before {
+  margin-right: .75em;
+}
+.social-auth-divider:not(:empty)::after {
+  margin-left: .75em;
+}
+
+.social-auth-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.btn-social {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-input);
+  color: var(--color-text-main);
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: var(--font-body);
+}
+
+.btn-social:hover {
+  background: var(--color-border);
+  border-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.btn-apple svg {
+  color: var(--color-text-main);
+}
+
+
 /* Floating Secure Virtual Keyboard */
 .virtual-keyboard {
   background: rgba(17, 28, 48, 0.95);
