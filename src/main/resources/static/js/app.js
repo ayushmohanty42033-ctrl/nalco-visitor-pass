@@ -5,12 +5,13 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_AUTH_DOMAIN",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_STORAGE_BUCKET",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDFe_suHr7e0Np5o52VUqj907Qds1h4kQw",
+    authDomain: "visitor-pass-27e01.firebaseapp.com",
+    projectId: "visitor-pass-27e01",
+    storageBucket: "visitor-pass-27e01.firebasestorage.app",
+    messagingSenderId: "860586399009",
+    appId: "1:860586399009:web:f1d38001ca8eb14416da60",
+    measurementId: "G-RMCHF6CCCN"
   };
 
   let firebaseEnabled = false;
