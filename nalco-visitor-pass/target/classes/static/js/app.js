@@ -3,6 +3,52 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  let firebaseEnabled = false;
+  let recaptchaVerifier = null;
+  let confirmationResult = null;
+
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      firebaseEnabled = true;
+      console.log("Firebase Auth SDK successfully initialized.");
+    } catch (e) {
+      console.error("Firebase initialization failed:", e);
+    }
+  } else {
+    console.log("Firebase Auth keys not configured. Operating in simulated OTP mode.");
+  }
+
+  function initFirebaseRecaptcha() {
+    if (!firebaseEnabled) return;
+    if (recaptchaVerifier) return;
+
+    try {
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          showToast('Security Expired', 'reCAPTCHA expired. Please request OTP again.', 'warning');
+        }
+      });
+      console.log("reCAPTCHA Verifier initialized.");
+    } catch (e) {
+      console.error("Failed to initialize RecaptchaVerifier:", e);
+    }
+  }
+
   // --- APPLICATION STATE ---
   let appState = {
     theme: 'dark',
@@ -153,9 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Guard view injector
     const guardConsoleContainer = document.getElementById('guard-main-injector');
-    const guardScannerContent = document.getElementById('admin-view-scanner').innerHTML;
-    if (guardConsoleContainer) {
-      guardConsoleContainer.innerHTML = guardScannerContent;
+    const adminScannerEl = document.getElementById('admin-view-scanner');
+    if (guardConsoleContainer && adminScannerEl) {
+      guardConsoleContainer.innerHTML = adminScannerEl.innerHTML;
       // Re-setup the guard scan trigger inside the guard gate view
       setupGuardScannerLogic(guardConsoleContainer);
     }
@@ -218,7 +264,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (viewName === 'admin-dashboard') {
       loadAdminDashboard();
     } else if (viewName === 'guard') {
-      resetGuardConsole(document.getElementById('guard-main-injector'));
+      const guardInjector = document.getElementById('guard-main-injector');
+      if (guardInjector) {
+        resetGuardConsole(guardInjector);
+      }
     }
 
     updateNavigationStates();
@@ -302,7 +351,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (subview === 'dashboard') {
       loadAdminDashboardStats();
     } else if (subview === 'scanner') {
-      resetGuardConsole(document.querySelector('.admin-main'));
+      const adminMain = document.querySelector('.admin-main');
+      if (adminMain) {
+        resetGuardConsole(adminMain);
+      }
     }
   }
 
@@ -772,19 +824,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginSendOtpBtn = document.getElementById('btn-login-send-otp');
     if (loginSendOtpBtn) {
       loginSendOtpBtn.addEventListener('click', async () => {
-        const username = document.getElementById('login-username').value;
+        const username = document.getElementById('login-username').value.trim();
         if (!username) {
           showToast('Input Required', 'Please enter your email or mobile number to send OTP.', 'error');
           return;
         }
 
-        try {
-          loginSendOtpBtn.disabled = true;
-          const res = await apiRequest('/api/auth/otp/send', 'POST', { destination: username });
-          showToast('OTP Sent', `OTP code sent (Code: ${res.mockOtp || 'XXXXXX'}).`, 'success');
-        } catch (e) {
-          showToast('OTP Error', e.message, 'error');
-          loginSendOtpBtn.disabled = false;
+        const isPhoneNumber = /^\+?[0-9]{10,15}$/.test(username);
+
+        if (firebaseEnabled && isPhoneNumber) {
+          let phoneNumber = username;
+          if (!phoneNumber.startsWith('+')) {
+            phoneNumber = '+91' + phoneNumber;
+          }
+
+          try {
+            loginSendOtpBtn.disabled = true;
+            loginSendOtpBtn.innerHTML = 'Sending SMS...';
+            initFirebaseRecaptcha();
+
+            confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifier);
+            showToast('Firebase OTP Sent', 'A verification code has been sent via SMS to ' + phoneNumber, 'success');
+            loginSendOtpBtn.innerHTML = 'Resend OTP';
+            loginSendOtpBtn.disabled = false;
+          } catch (e) {
+            showToast('SMS Request Failed', e.message, 'error');
+            loginSendOtpBtn.disabled = false;
+            loginSendOtpBtn.innerHTML = 'Request OTP';
+            if (recaptchaVerifier) {
+              recaptchaVerifier.render().then(widgetId => {
+                grecaptcha.reset(widgetId);
+              });
+            }
+          }
+        } else {
+          try {
+            loginSendOtpBtn.disabled = true;
+            const res = await apiRequest('/api/auth/otp/send', 'POST', { destination: username });
+            showToast('OTP Sent', `OTP code sent (Code: ${res.mockOtp || 'XXXXXX'}).`, 'success');
+            loginSendOtpBtn.disabled = false;
+          } catch (e) {
+            showToast('OTP Error', e.message, 'error');
+            loginSendOtpBtn.disabled = false;
+          }
         }
       });
     }
@@ -813,10 +895,20 @@ document.addEventListener('DOMContentLoaded', () => {
             loginRes = await apiRequest('/api/auth/login', 'POST', { username, password });
           } else {
             const otp = document.getElementById('login-otp').value;
-            // Verify OTP first
-            await apiRequest('/api/auth/otp/verify', 'POST', { destination: username, otp });
-            // Direct mock bypass login if verified
-            loginRes = await mockOtpBypassLogin(username);
+            if (firebaseEnabled && confirmationResult) {
+              try {
+                const userCredential = await confirmationResult.confirm(otp);
+                const idToken = await userCredential.user.getIdToken();
+                loginRes = await apiRequest('/api/auth/firebase-login', 'POST', { idToken });
+              } catch (e) {
+                throw new Error("Invalid OTP code or Firebase validation failed: " + e.message);
+              }
+            } else {
+              // Verify OTP first
+              await apiRequest('/api/auth/otp/verify', 'POST', { destination: username, otp });
+              // Direct mock bypass login if verified
+              loginRes = await mockOtpBypassLogin(username);
+            }
           }
 
           // Successful authentication
@@ -1528,6 +1620,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 11. SECURITY GUARD SCANNER CONSOLE LOGIC ---
 
   function resetGuardConsole(parentView) {
+    if (!parentView) return;
     const manualInput = parentView.querySelector('#guard-qr-token-input');
     const defaultPrompt = parentView.querySelector('#guard-scan-default-prompt');
     const detailsCard = parentView.querySelector('#guard-scan-result-details');
@@ -1538,6 +1631,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupGuardScannerLogic(containerNode) {
+    if (!containerNode) return;
     const triggerBtn = containerNode.querySelector('#btn-guard-trigger-scan');
     const inputEl = containerNode.querySelector('#guard-qr-token-input');
     

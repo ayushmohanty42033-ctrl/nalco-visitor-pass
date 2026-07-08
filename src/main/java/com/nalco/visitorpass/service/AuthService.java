@@ -1,6 +1,9 @@
 package com.nalco.visitorpass.service;
 
 import com.nalco.visitorpass.config.JwtTokenUtil;
+import com.nalco.visitorpass.config.FirebaseConfig;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import com.nalco.visitorpass.entity.User;
 import com.nalco.visitorpass.entity.Visitor;
 import com.nalco.visitorpass.repository.UserRepository;
@@ -132,6 +135,92 @@ public class AuthService {
             }
             userRepository.save(user);
             response.put("success", false);
+        }
+
+        return response;
+    }
+
+    public Map<String, Object> loginWithFirebaseToken(String firebaseIdToken) {
+        Map<String, Object> response = new HashMap<>();
+        String phoneNumber = null;
+        String email = null;
+
+        if (FirebaseConfig.isInitialized()) {
+            try {
+                FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(firebaseIdToken);
+                phoneNumber = (String) decodedToken.getClaims().get("phone_number");
+                if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+                    String uid = decodedToken.getUid();
+                    phoneNumber = FirebaseAuth.getInstance().getUser(uid).getPhoneNumber();
+                }
+                email = decodedToken.getEmail();
+            } catch (Exception e) {
+                response.put("success", false);
+                response.put("message", "Firebase ID Token verification failed: " + e.getMessage());
+                return response;
+            }
+        } else {
+            if (firebaseIdToken != null && firebaseIdToken.startsWith("mock-firebase-token-")) {
+                String identifier = firebaseIdToken.replace("mock-firebase-token-", "");
+                if (identifier.contains("@")) {
+                    email = identifier;
+                } else {
+                    phoneNumber = identifier;
+                }
+            } else {
+                response.put("success", false);
+                response.put("message", "Firebase Admin SDK is not initialized and a valid mock token was not provided.");
+                return response;
+            }
+        }
+
+        Optional<User> userOpt = Optional.empty();
+        String searchIdentifier = "";
+
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+            searchIdentifier = phoneNumber;
+            String targetMobile = phoneNumber;
+            if (targetMobile.startsWith("+91")) {
+                targetMobile = targetMobile.substring(3);
+            } else if (targetMobile.startsWith("91") && targetMobile.length() == 12) {
+                targetMobile = targetMobile.substring(2);
+            }
+            userOpt = userRepository.findByMobile(targetMobile);
+            if (userOpt.isEmpty()) {
+                userOpt = userRepository.findByMobile(phoneNumber);
+            }
+        } else if (email != null && !email.trim().isEmpty()) {
+            searchIdentifier = email;
+            userOpt = userRepository.findByEmail(email);
+        }
+
+        if (userOpt.isEmpty()) {
+            response.put("success", false);
+            response.put("message", "The identity (" + searchIdentifier + ") verified by Firebase is not registered in our system. Please sign up or register first.");
+            return response;
+        }
+
+        User user = userOpt.get();
+        if (!user.isEnabled()) {
+            response.put("success", false);
+            response.put("message", "Account is locked or disabled. Please contact the administrator.");
+            return response;
+        }
+
+        user.setFailedLoginAttempts(0);
+        userRepository.save(user);
+
+        String token = jwtTokenUtil.generateToken(user.getEmail(), user.getRole());
+        response.put("success", true);
+        response.put("token", token);
+        response.put("email", user.getEmail());
+        response.put("role", user.getRole());
+
+        if ("ROLE_VISITOR".equals(user.getRole())) {
+            Optional<Visitor> visitorOpt = visitorRepository.findByUser(user);
+            visitorOpt.ifPresent(visitor -> response.put("fullName", visitor.getFullName()));
+        } else {
+            response.put("fullName", "System Administrator");
         }
 
         return response;

@@ -153,4 +153,22 @@ public class AuthController {
             return ResponseEntity.badRequest().body(response);
         }
     }
+
+    @PostMapping("/firebase-login")
+    public ResponseEntity<?> firebaseLogin(@RequestBody Map<String, String> payload) {
+        String idToken = payload.get("idToken");
+        if (idToken == null || idToken.trim().isEmpty()) {
+            Map<String, Object> error = new HashMap<>();
+            error.put("success", false);
+            error.put("message", "Firebase ID Token is required.");
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        Map<String, Object> result = authService.loginWithFirebaseToken(idToken);
+        if (!(boolean) result.get("success")) {
+            return ResponseEntity.status(401).body(result);
+        }
+
+        return ResponseEntity.ok(result);
+    }
 }

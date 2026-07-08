@@ -3,6 +3,52 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_AUTH_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_STORAGE_BUCKET",
+    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  let firebaseEnabled = false;
+  let recaptchaVerifier = null;
+  let confirmationResult = null;
+
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      firebaseEnabled = true;
+      console.log("Firebase Auth SDK successfully initialized.");
+    } catch (e) {
+      console.error("Firebase initialization failed:", e);
+    }
+  } else {
+    console.log("Firebase Auth keys not configured. Operating in simulated OTP mode.");
+  }
+
+  function initFirebaseRecaptcha() {
+    if (!firebaseEnabled) return;
+    if (recaptchaVerifier) return;
+
+    try {
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          showToast('Security Expired', 'reCAPTCHA expired. Please request OTP again.', 'warning');
+        }
+      });
+      console.log("reCAPTCHA Verifier initialized.");
+    } catch (e) {
+      console.error("Failed to initialize RecaptchaVerifier:", e);
+    }
+  }
+
   // --- APPLICATION STATE ---
   let appState = {
     theme: 'dark',
@@ -778,19 +824,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginSendOtpBtn = document.getElementById('btn-login-send-otp');
     if (loginSendOtpBtn) {
       loginSendOtpBtn.addEventListener('click', async () => {
-        const username = document.getElementById('login-username').value;
+        const username = document.getElementById('login-username').value.trim();
         if (!username) {
           showToast('Input Required', 'Please enter your email or mobile number to send OTP.', 'error');
           return;
         }
 
-        try {
-          loginSendOtpBtn.disabled = true;
-          const res = await apiRequest('/api/auth/otp/send', 'POST', { destination: username });
-          showToast('OTP Sent', `OTP code sent (Code: ${res.mockOtp || 'XXXXXX'}).`, 'success');
-        } catch (e) {
-          showToast('OTP Error', e.message, 'error');
-          loginSendOtpBtn.disabled = false;
+        const isPhoneNumber = /^\+?[0-9]{10,15}$/.test(username);
+
+        if (firebaseEnabled && isPhoneNumber) {
+          let phoneNumber = username;
+          if (!phoneNumber.startsWith('+')) {
+            phoneNumber = '+91' + phoneNumber;
+          }
+
+          try {
+            loginSendOtpBtn.disabled = true;
+            loginSendOtpBtn.innerHTML = 'Sending SMS...';
+            initFirebaseRecaptcha();
+
+            confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifier);
+            showToast('Firebase OTP Sent', 'A verification code has been sent via SMS to ' + phoneNumber, 'success');
+            loginSendOtpBtn.innerHTML = 'Resend OTP';
+            loginSendOtpBtn.disabled = false;
+          } catch (e) {
+            showToast('SMS Request Failed', e.message, 'error');
+            loginSendOtpBtn.disabled = false;
+            loginSendOtpBtn.innerHTML = 'Request OTP';
+            if (recaptchaVerifier) {
+              recaptchaVerifier.render().then(widgetId => {
+                grecaptcha.reset(widgetId);
+              });
+            }
+          }
+        } else {
+          try {
+            loginSendOtpBtn.disabled = true;
+            const res = await apiRequest('/api/auth/otp/send', 'POST', { destination: username });
+            showToast('OTP Sent', `OTP code sent (Code: ${res.mockOtp || 'XXXXXX'}).`, 'success');
+            loginSendOtpBtn.disabled = false;
+          } catch (e) {
+            showToast('OTP Error', e.message, 'error');
+            loginSendOtpBtn.disabled = false;
+          }
         }
       });
     }
@@ -819,10 +895,20 @@ document.addEventListener('DOMContentLoaded', () => {
             loginRes = await apiRequest('/api/auth/login', 'POST', { username, password });
           } else {
             const otp = document.getElementById('login-otp').value;
-            // Verify OTP first
-            await apiRequest('/api/auth/otp/verify', 'POST', { destination: username, otp });
-            // Direct mock bypass login if verified
-            loginRes = await mockOtpBypassLogin(username);
+            if (firebaseEnabled && confirmationResult) {
+              try {
+                const userCredential = await confirmationResult.confirm(otp);
+                const idToken = await userCredential.user.getIdToken();
+                loginRes = await apiRequest('/api/auth/firebase-login', 'POST', { idToken });
+              } catch (e) {
+                throw new Error("Invalid OTP code or Firebase validation failed: " + e.message);
+              }
+            } else {
+              // Verify OTP first
+              await apiRequest('/api/auth/otp/verify', 'POST', { destination: username, otp });
+              // Direct mock bypass login if verified
+              loginRes = await mockOtpBypassLogin(username);
+            }
           }
 
           // Successful authentication
