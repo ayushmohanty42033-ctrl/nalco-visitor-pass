@@ -153,9 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Guard view injector
     const guardConsoleContainer = document.getElementById('guard-main-injector');
-    const guardScannerContent = document.getElementById('admin-view-scanner').innerHTML;
-    if (guardConsoleContainer) {
-      guardConsoleContainer.innerHTML = guardScannerContent;
+    const adminScannerEl = document.getElementById('admin-view-scanner');
+    if (guardConsoleContainer && adminScannerEl) {
+      guardConsoleContainer.innerHTML = adminScannerEl.innerHTML;
       // Re-setup the guard scan trigger inside the guard gate view
       setupGuardScannerLogic(guardConsoleContainer);
     }
@@ -218,7 +218,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (viewName === 'admin-dashboard') {
       loadAdminDashboard();
     } else if (viewName === 'guard') {
-      resetGuardConsole(document.getElementById('guard-main-injector'));
+      const guardInjector = document.getElementById('guard-main-injector');
+      if (guardInjector) {
+        resetGuardConsole(guardInjector);
+      }
     }
 
     updateNavigationStates();
@@ -302,7 +305,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (subview === 'dashboard') {
       loadAdminDashboardStats();
     } else if (subview === 'scanner') {
-      resetGuardConsole(document.querySelector('.admin-main'));
+      const adminMain = document.querySelector('.admin-main');
+      if (adminMain) {
+        resetGuardConsole(adminMain);
+      }
     }
   }
 
@@ -1528,6 +1534,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 11. SECURITY GUARD SCANNER CONSOLE LOGIC ---
 
   function resetGuardConsole(parentView) {
+    if (!parentView) return;
     const manualInput = parentView.querySelector('#guard-qr-token-input');
     const defaultPrompt = parentView.querySelector('#guard-scan-default-prompt');
     const detailsCard = parentView.querySelector('#guard-scan-result-details');
@@ -1538,6 +1545,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupGuardScannerLogic(containerNode) {
+    if (!containerNode) return;
     const triggerBtn = containerNode.querySelector('#btn-guard-trigger-scan');
     const inputEl = containerNode.querySelector('#guard-qr-token-input');
     
