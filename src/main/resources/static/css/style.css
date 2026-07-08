@@ -2089,6 +2089,61 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
+   PREMIUM MICRO-ANIMATIONS AND TRANSITIONS
+   ========================================================================== */
+
+/* 1. Global smooth page fade/slide-in for views */
+.app-view:not(.hidden) {
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 2. Interactive hover scales for buttons */
+.btn-primary, .btn-secondary, .btn-auth-submit, .btn-social, .btn-theme, .btn-danger, .btn-success {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.btn-primary:hover, .btn-secondary:hover, .btn-auth-submit:hover, .btn-social:hover, .btn-danger:hover, .btn-success:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
+}
+.btn-primary:active, .btn-secondary:active, .btn-auth-submit:active, .btn-social:active, .btn-danger:active, .btn-success:active {
+  transform: scale(0.98);
+}
+
+/* 3. Glass Card Lift and Hover Highlight */
+.glass-card, .status-card, .pass-card {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease !important;
+}
+.glass-card:hover, .status-card:hover, .pass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  border-color: rgba(96, 165, 250, 0.35) !important;
+}
+
+/* 4. Brand Link Scale effect */
+.brand {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.brand:hover {
+  transform: scale(1.01);
+}
+
+/* 5. Input Field Glow Animations */
+.form-control {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+.form-control:focus {
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2) !important;
+}
+
+/* 6. Sidebar Menu Hover Animation */
+.admin-sidebar-menu li a, .dashboard-menu li a {
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease !important;
+}
+.admin-sidebar-menu li a:hover, .dashboard-menu li a:hover {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
    PRINT VISITOR PASS CSS OVERRIDES
    ========================================================================== */
 
