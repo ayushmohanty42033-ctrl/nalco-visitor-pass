@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Secure Visitor Pass Management System for National Aluminium Company Limited (NALCO)">
+  <title>NALCO | Visitor Pass Portal</title>
+  
+  <!-- Font Stylesheets -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Core Design System -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Ambient Glow Nodes (Visual decoration) -->
+  <div class="bg-glow-container" aria-hidden="true">
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+  </div>
+
+  <!-- Toast Message Overlay -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Sticky Main Navigation Bar -->
+  <header class="main-header">
+    <nav class="nav-container" aria-label="Main Navigation">
+      <a href="#" class="brand" id="nav-brand-link">
+        <div class="brand-logo">
+          <img src="images/logo.png" alt="NALCO Logo" style="height: 40px; width: 40px; border-radius: 4px;">
+        </div>
+        <div class="brand-text">
+          <span class="brand-name">NALCO India</span>
+          <span class="brand-tagline">Visitor Pass System</span>
+        </div>
+      </a>
+
+      <!-- Public Navigation Links -->
+      <ul class="nav-links" id="main-nav-links">
+        <li><a href="#" class="nav-link active" data-view="home">Home</a></li>
+        <li><a href="#" class="nav-link" data-view="register" id="nav-link-register">Apply Pass</a></li>
+        <li><a href="#" class="nav-link" data-view="login" id="nav-link-login">Sign In</a></li>
+        <li><a href="#" class="nav-link" data-view="guard" id="nav-link-guard">Security Checkpoint</a></li>
+      </ul>
+
+      <!-- Theme and Auth Controls -->
+      <div class="nav-actions">
+        <!-- Light / Dark Mode Toggle -->
+        <button class="btn-theme" id="theme-toggle-btn" aria-label="Toggle light/dark theme">
+          <svg class="sun-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+
+        <div id="auth-buttons-container">
+          <a href="#" class="btn-primary" data-view="login">Sign In</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ==========================================================================
+         VIEW 1: LANDING PAGE (HOME)
+         ========================================================================== -->
+    <section class="app-view" id="view-home">
+      <!-- Full-Width Photo Carousel Banner -->
+      <div class="hero-carousel">
+        <div class="carousel-track" id="hero-carousel-track">
+          <!-- Slide 1: Corporate Office -->
+          <div class="carousel-slide active">
+            <img class="carousel-img" src="images/slide1.jpg" alt="NALCO Smelter Plant Facility at Night">
+            <div class="carousel-overlay">
+              <div class="carousel-overlay-content">
+                <p class="hero-subtitle">National Aluminium Company Limited</p>
+                <h1 class="hero-title">Securing Enterprise Boundaries with Digital Integrity</h1>
+                <p class="hero-description">Welcome to the NALCO Visitor Pass Management System. Request, authorize, and verify industrial site permits efficiently and securely.</p>
+                <div class="hero-actions">
+                  <button class="btn-primary btn-get-started" data-view="register">Get Started</button>
+                  <button class="btn-secondary" data-view="login">Admin Login</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Slide 2: Smelter Plant -->
+          <div class="carousel-slide">
+            <img class="carousel-img" src="images/slide2.jpg" alt="NALCO Mining Heavy Stacker Reclaimer Crane">
+            <div class="carousel-overlay">
+              <div class="carousel-overlay-content">
+                <p class="hero-subtitle">Industrial Excellence</p>
+                <h1 class="hero-title">High-Security Smelter Operations Clearance</h1>
+                <p class="hero-description">Access to smelter areas requires mandatory security induction, verified government identification records, and host approval.</p>
+                <div class="hero-actions">
+                  <button class="btn-primary" data-view="register">Apply for Access</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Slide 3: Control Room -->
+          <div class="carousel-slide">
+            <img class="carousel-img" src="images/slide3.jpg" alt="NALCO Alumina Refinery Plant Main Gate Entrance">
+            <div class="carousel-overlay">
+              <div class="carousel-overlay-content">
+                <p class="hero-subtitle">Operational Safety</p>
+                <h1 class="hero-title">Real-Time Verification & Traceability</h1>
+                <p class="hero-description">Every visit record is linked to a cryptographic QR code, enabling security officers to track entry and exit logs instantly.</p>
+                <div class="hero-actions">
+                  <button class="btn-primary" data-view="register">Register Visit</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Carousel Navigation Controls -->
+        <button class="carousel-control carousel-control-prev" id="carousel-prev-btn" aria-label="Previous slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="carousel-control carousel-control-next" id="carousel-next-btn" aria-label="Next slide">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Carousel Indicator Dots -->
+        <div class="carousel-indicators" id="carousel-dots-container">
+          <button class="carousel-indicator active" data-slide="0" aria-label="Go to slide 1"></button>
+          <button class="carousel-indicator" data-slide="1" aria-label="Go to slide 2"></button>
+          <button class="carousel-indicator" data-slide="2" aria-label="Go to slide 3"></button>
+        </div>
+      </div>
+
+      <!-- Information & Grid Content -->
+      <div class="landing-content">
+        <!-- About NALCO and Portal Goals -->
+        <div class="section-grid section-grid-2">
+          <div>
+            <h2 class="gradient-text" style="font-size: 2.2rem; margin-bottom: 1rem;">Leading the Aluminium Revolution</h2>
+            <p style="color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem;">
+              National Aluminium Company Limited (NALCO) is a Navratna CPSE under the Ministry of Mines, Government of India. Operating massive integrated mining, alumina, power, and smelter operations, security of assets, infrastructure, and human resources remains our highest institutional priority.
+            </p>
+            <p style="color: var(--color-text-secondary); line-height: 1.6; font-size: 0.95rem;">
+              The digital Visitor Pass Management System replaces paper logbooks with end-to-end encrypted identification check-ins, visitor pre-screening, blacklist matches, and instant host notification alerts.
+            </p>
+          </div>
+          
+          <!-- Security Warnings Notices -->
+          <div class="glass-card security-notice-card">
+            <div class="card-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Mandatory Security Policy</h3>
+            <p>Access to NALCO industrial zones is subject to the following rules:</p>
+            <ul class="list-styled">
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Valid Gov. identity card (Aadhaar, PAN, License, or Passport) must match registration.</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Pre-registered OTP verifications for mobile and email contact details are mandatory.</span>
+              </li>
+              <li>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                <span>Random physical safety briefing and gear verification at security checkpoints.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Portal Operations Steps -->
+        <div>
+          <h2 style="text-align: center; margin-bottom: 2.5rem;" class="gradient-text">How to Acquire Your Entry Pass</h2>
+          <div class="section-grid section-grid-3">
+            <div class="glass-card">
+              <div class="card-icon"><span>1</span></div>
+              <h3>1. Register Account</h3>
+              <p>Create a secure account with your contact numbers, verify via live OTP, and upload your photo along with Government identity documentation.</p>
+            </div>
+            <div class="glass-card">
+              <div class="card-icon"><span>2</span></div>
+              <h3>2. Apply for Visit</h3>
+              <p>Search host employees, select departments, define date/times, specify your purpose, and submit for security approval clearance.</p>
+            </div>
+            <div class="glass-card">
+              <div class="card-icon"><span>3</span></div>
+              <h3>3. Download QR Pass</h3>
+              <p>Once approved, print or download your pass. Security guards will verify the QR code at NALCO check gates to activate entry.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact details section -->
+        <div class="glass-card contact-section">
+          <div>
+            <h3 style="font-size: 1.5rem; margin-bottom: 0.5rem;">Corporate Operations & Security Head</h3>
+            <p>For urgent gate issues, blacklist appeals, or administrative clearances, reach out to security control center.</p>
+            <div class="contact-info-list">
+              <div class="contact-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <div class="contact-info-text">
+                  <h4>Alumina Refinery Address</h4>
+                  <p>NALCO, Damanjodi, Koraput, Odisha - 763008, India</p>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 9.72v3z"/></svg>
+                <div class="contact-info-text">
+                  <h4>Security Desk Helpline</h4>
+                  <p>+91 (06853) 254220 / 254221</p>
+                </div>
+              </div>
+              <div class="contact-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <div class="contact-info-text">
+                  <h4>Operations Email</h4>
+                  <p>security.control@nalcoindia.co.in</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a href="https://maps.google.com/?q=NALCO+Alumina+Refinery+Damanjodi+Koraput+Odisha" target="_blank" rel="noopener noreferrer" class="contact-visual-box" title="Open in Google Maps">
+            <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-primary-light); transition: transform 0.3s ease;">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <div style="position: absolute; bottom: 1rem; font-size: 0.75rem; color: var(--color-text-muted);">Alumina Refinery Plant - Damanjodi</div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Footer branding -->
+      <footer class="glass-card" style="margin: 0 1.5rem 2rem 1.5rem; text-align: center; padding: 1.5rem; font-size: 0.8rem; color: var(--color-text-muted);">
+        <p>&copy; 2026 National Aluminium Company Limited (NALCO). Security Gate Operations. All rights reserved.</p>
+        <p style="margin-top: 0.4rem; color: var(--color-primary-light);">Designed with enterprise compliance guidelines.</p>
+      </footer>
+    </section>
+
+    <!-- ==========================================================================
+         VIEW 2: VISITOR REGISTRATION VIEW
+         ========================================================================== -->
+    <section class="app-view hidden" id="view-register">
+      <div class="auth-view">
+        <div class="auth-container">
+          <div class="glass-card">
+            <div class="auth-logo-header">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-primary-light);">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              <h2>Visitor Registration</h2>
+              <p>Create a verified security profile to request passes</p>
+            </div>
+
+            <!-- Registration Step 1: Base Registration Profile -->
+            <form id="reg-form" novalidate>
+              
+              <!-- Personal Details -->
+              <div class="form-group">
+                <label for="reg-name">Full Name</label>
+                <div class="input-wrapper">
+                  <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <input type="text" id="reg-name" class="form-control" autocomplete="name" placeholder="e.g. Ayush Mohanty" required>
+                </div>
+                <span class="error-msg" id="reg-name-error"></span>
+              </div>
+
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label for="reg-email">Email Address</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <input type="email" id="reg-email" class="form-control" autocomplete="email" placeholder="e.g. name@domain.com" required>
+                  </div>
+                  <span class="error-msg" id="reg-email-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-phone">Mobile Number</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 9.72v3z"/></svg>
+                    <input type="tel" id="reg-phone" class="form-control" autocomplete="tel" placeholder="e.g. 9876543210" required>
+                  </div>
+                  <span class="error-msg" id="reg-phone-error"></span>
+                </div>
+              </div>
+
+              <!-- Contact Verification OTP Simulation Box -->
+              <div class="form-group hidden" id="otp-verify-section">
+                <label for="reg-otp-input" style="color: var(--color-primary-light);">Verify OTP Code</label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <div class="input-wrapper" style="flex-grow: 1;">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="text" id="reg-otp-input" class="form-control" placeholder="Enter 6-Digit OTP code" maxlength="6" inputmode="numeric">
+                  </div>
+                  <button type="button" class="btn-primary" id="btn-verify-reg-otp">Verify</button>
+                </div>
+                <div class="pw-strength-text" style="margin-top: 0.3rem;">Simulated OTP shown in the alert prompt/logs.</div>
+                <span class="error-msg" id="reg-otp-error"></span>
+              </div>
+
+              <!-- Government Identity -->
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label for="reg-id-type">Govt ID Type</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>
+                    <select id="reg-id-type" class="form-control" required style="padding-left: 2.5rem;">
+                      <option value="Aadhaar">Aadhaar</option>
+                      <option value="PAN">PAN</option>
+                      <option value="Passport">Passport</option>
+                      <option value="Driving License">Driving License</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-id-number">Govt ID Number</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <input type="text" id="reg-id-number" class="form-control" placeholder="ID Card Number" required>
+                  </div>
+                  <span class="error-msg" id="reg-id-number-error"></span>
+                </div>
+              </div>
+
+              <!-- Company & Emergency Contact -->
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label for="reg-company">Company/Organization</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 21H2V3h20v18z"/><path d="M9 21V9h6v12"/></svg>
+                    <input type="text" id="reg-company" class="form-control" placeholder="Company Name">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-emergency">Emergency Contact Name & Phone</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <input type="text" id="reg-emergency" class="form-control" placeholder="Name - Phone" required>
+                  </div>
+                  <span class="error-msg" id="reg-emergency-error"></span>
+                </div>
+              </div>
+
+              <!-- Permanent Address -->
+              <div class="form-group">
+                <label for="reg-address">Permanent Address</label>
+                <div class="input-wrapper">
+                  <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <input type="text" id="reg-address" class="form-control" placeholder="Full residential address" required>
+                </div>
+                <span class="error-msg" id="reg-address-error"></span>
+              </div>
+
+              <!-- Vehicle Number & Photo and ID Document upload -->
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label for="reg-vehicle">Vehicle Number (Optional)</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="22" height="13" rx="2"/><path d="M4 21v-5"/><path d="M20 21v-5"/></svg>
+                    <input type="text" id="reg-vehicle" class="form-control" placeholder="e.g. OD-02-AB-1234">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Visitor Photograph</label>
+                  <div class="file-upload-wrapper" id="photo-upload-container">
+                    <input type="file" class="file-upload-input" id="reg-photo-file" accept="image/*">
+                    <div class="file-upload-label" id="photo-upload-label">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                      <span>Upload Photo</span>
+                    </div>
+                    <img class="file-upload-preview hidden" id="photo-preview" alt="Photograph Preview">
+                  </div>
+                  <input type="hidden" id="reg-photo-base64">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Government ID Document Copy</label>
+                <div class="file-upload-wrapper" id="id-upload-container">
+                  <input type="file" class="file-upload-input" id="reg-id-file" accept="image/*,application/pdf">
+                  <div class="file-upload-label" id="id-upload-label">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <span>Upload ID Card Copy</span>
+                  </div>
+                  <img class="file-upload-preview hidden" id="id-preview" alt="ID Document Preview">
+                </div>
+                <input type="hidden" id="reg-id-base64">
+              </div>
+
+              <!-- Passwords block -->
+              <div class="form-row form-row-2">
+                <div class="form-group">
+                  <label for="reg-pass">Create Password</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="reg-pass" class="form-control" autocomplete="new-password" placeholder="At least 8 chars" required>
+                    <button type="button" class="btn-toggle-pass" aria-label="Show password" aria-pressed="false">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                  </div>
+                  <!-- Password Strength Meter -->
+                  <div class="pw-strength-container">
+                    <div class="pw-strength-bar"><div class="pw-strength-indicator" id="reg-pw-strength-indicator"></div></div>
+                    <span class="pw-strength-text" id="reg-pw-strength-text">Strength: Weak</span>
+                  </div>
+                  <span class="error-msg" id="reg-pass-error"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="reg-pass-confirm">Confirm Password</label>
+                  <div class="input-wrapper">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="password" id="reg-pass-confirm" class="form-control" placeholder="Repeat password" required>
+                  </div>
+                  <span class="error-msg" id="reg-pass-confirm-error"></span>
+                </div>
+              </div>
+
+              <!-- Submit Buttons -->
+              <div class="form-actions">
+                <button type="button" class="btn-primary btn-auth-submit" id="btn-request-reg-otp">
+                  <span>Send OTP for Verification</span>
+                </button>
+                <button type="submit" class="btn-primary btn-auth-submit hidden" id="btn-final-register">
+                  <span>Complete Registration</span>
+                </button>
+              </div>
+            </form>
+            
+            <p class="auth-switch-prompt">Already have an account? <a href="#" data-view="login">Sign In</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         VIEW 3: SECURE LOGIN SYSTEM
+         ========================================================================== -->
+    <section class="app-view hidden" id="view-login">
+      <div class="auth-view">
+        <div class="auth-container">
+          <div class="glass-card">
+            
+            <!-- Auth Header -->
+            <div class="auth-logo-header">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-primary-light);">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              <h2>Portal Sign In</h2>
+              <p>Access your NALCO passes or operations dashboards</p>
+            </div>
+
+            <!-- Login selection tab -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+              <button class="btn-primary" id="login-tab-password" style="flex-grow: 1; font-size: 0.8rem; padding: 0.5rem;">Password Entry</button>
+              <button class="btn-secondary" id="login-tab-otp" style="flex-grow: 1; font-size: 0.8rem; padding: 0.5rem;">OTP Sign In</button>
+            </div>
+
+            <!-- Password Form -->
+            <form id="login-cred-form" novalidate>
+              <div class="form-group">
+                <label for="login-username">Email or Mobile Number</label>
+                <div class="input-wrapper">
+                  <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <input type="text" id="login-username" class="form-control" autocomplete="username" placeholder="e.g. name@domain.com / 9876543210" required>
+                </div>
+                <span class="error-msg" id="login-username-error"></span>
+              </div>
+
+              <!-- Password Input with Virtual Keyboard -->
+              <div class="form-group" id="login-password-group">
+                <label for="login-password">Password</label>
+                <div class="input-wrapper">
+                  <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <input type="password" id="login-password" class="form-control" autocomplete="current-password" placeholder="••••••••" required>
+                  <button type="button" class="btn-toggle-pass" aria-label="Show password" aria-pressed="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <span class="error-msg" id="login-password-error"></span>
+                
+                <!-- Toggle for virtual keyboard -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 0.25rem;">
+                  <button type="button" id="toggle-keyboard-btn" style="background:none; border:none; color:var(--color-primary-light); font-size:0.78rem; font-weight:600; cursor:pointer;">
+                    [Show Secure Virtual Keyboard]
+                  </button>
+                </div>
+
+                <!-- Floating Secure Keyboard Container -->
+                <div class="virtual-keyboard hidden" id="login-virtual-keyboard">
+                  <div class="keyboard-row">
+                    <button type="button" class="key-btn">1</button>
+                    <button type="button" class="key-btn">2</button>
+                    <button type="button" class="key-btn">3</button>
+                    <button type="button" class="key-btn">4</button>
+                    <button type="button" class="key-btn">5</button>
+                    <button type="button" class="key-btn">6</button>
+                    <button type="button" class="key-btn">7</button>
+                    <button type="button" class="key-btn">8</button>
+                    <button type="button" class="key-btn">9</button>
+                    <button type="button" class="key-btn">0</button>
+                  </div>
+                  <div class="keyboard-row">
+                    <button type="button" class="key-btn">q</button>
+                    <button type="button" class="key-btn">w</button>
+                    <button type="button" class="key-btn">e</button>
+                    <button type="button" class="key-btn">r</button>
+                    <button type="button" class="key-btn">t</button>
+                    <button type="button" class="key-btn">y</button>
+                    <button type="button" class="key-btn">u</button>
+                    <button type="button" class="key-btn">i</button>
+                    <button type="button" class="key-btn">o</button>
+                    <button type="button" class="key-btn">p</button>
+                  </div>
+                  <div class="keyboard-row">
+                    <button type="button" class="key-btn">a</button>
+                    <button type="button" class="key-btn">s</button>
+                    <button type="button" class="key-btn">d</button>
+                    <button type="button" class="key-btn">f</button>
+                    <button type="button" class="key-btn">g</button>
+                    <button type="button" class="key-btn">h</button>
+                    <button type="button" class="key-btn">j</button>
+                    <button type="button" class="key-btn">k</button>
+                    <button type="button" class="key-btn">l</button>
+                  </div>
+                  <div class="keyboard-row">
+                    <button type="button" class="key-btn key-btn-wide" id="kb-caps">Caps</button>
+                    <button type="button" class="key-btn">z</button>
+                    <button type="button" class="key-btn">x</button>
+                    <button type="button" class="key-btn">c</button>
+                    <button type="button" class="key-btn">v</button>
+                    <button type="button" class="key-btn">b</button>
+                    <button type="button" class="key-btn">n</button>
+                    <button type="button" class="key-btn">m</button>
+                    <button type="button" class="key-btn key-btn-wide" id="kb-back">Back</button>
+                  </div>
+                  <div class="keyboard-row">
+                    <button type="button" class="key-btn key-btn-wide" id="kb-shift">Symbols</button>
+                    <button type="button" class="key-btn key-btn-space" id="kb-space">Space</button>
+                    <button type="button" class="key-btn key-btn-wide" id="kb-clear">Clear</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OTP Inputs (Shared with OTP login) -->
+              <div class="form-group hidden" id="login-otp-group">
+                <label for="login-otp">One-Time Password (OTP)</label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <div class="input-wrapper" style="flex-grow: 1;">
+                    <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <input type="text" id="login-otp" class="form-control" placeholder="6-digit code" maxlength="6" inputmode="numeric">
+                  </div>
+                  <button type="button" class="btn-secondary" id="btn-login-send-otp">Request OTP</button>
+                </div>
+                <span class="error-msg" id="login-otp-error"></span>
+              </div>
+
+              <!-- reCAPTCHA Mock Container -->
+              <div class="captcha-container" id="login-captcha-section">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="recaptcha-checkbox" required>
+                  <label for="recaptcha-checkbox" style="text-transform: none; font-size: 0.82rem; margin: 0; cursor: pointer;">I am not a robot</label>
+                </div>
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 0.4rem;">
+                  <!-- Mock Google Shield style icon -->
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                  <div style="font-size: 0.65rem; color: var(--color-text-muted); line-height: 1.1;">reCAPTCHA<br>Privacy - Terms</div>
+                </div>
+              </div>
+
+              <!-- Options -->
+              <div class="form-options-row">
+                <div class="checkbox-label">
+                  <input type="checkbox" id="login-remember">
+                  <label for="login-remember" style="text-transform: none; margin:0; font-size: 0.85rem;">Remember Me</label>
+                </div>
+                <a href="#" class="link-forgot" id="link-forgot-pass">Forgot Password?</a>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="btn-primary btn-auth-submit" id="btn-login-submit">
+                  <span>Sign In</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Reset password panel (Initially Hidden) -->
+            <form id="reset-password-form" class="hidden" novalidate>
+              <div style="margin-bottom: 1.5rem;">
+                <button type="button" class="btn-secondary" id="btn-back-to-login" style="font-size:0.75rem; padding: 0.3rem 0.6rem;">&larr; Back to Login</button>
+              </div>
+              
+              <div class="form-group">
+                <label for="reset-email">Email or Mobile Number</label>
+                <div class="input-wrapper">
+                  <svg class="input-icon-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/></svg>
+                  <input type="text" id="reset-email" class="form-control" placeholder="Registered contact detail" required>
+                </div>
+                <span class="error-msg" id="reset-email-error"></span>
+              </div>
+
+              <div class="form-group hidden" id="reset-otp-group">
+                <label for="reset-otp">OTP Verification</label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <div class="input-wrapper" style="flex-grow: 1;">
+                    <input type="text" id="reset-otp" class="form-control" placeholder="6-digit code" maxlength="6" inputmode="numeric">
+                  </div>
+                  <button type="button" class="btn-secondary" id="btn-reset-send-otp">Send OTP</button>
+                </div>
+                <span class="error-msg" id="reset-otp-error"></span>
+              </div>
+
+              <div class="form-group hidden" id="reset-newpass-group">
+                <label for="reset-newpass">Create New Password</label>
+                <div class="input-wrapper">
+                  <input type="password" id="reset-newpass" class="form-control" placeholder="Enter strong password">
+                </div>
+                <span class="error-msg" id="reset-newpass-error"></span>
+              </div>
+
+              <div class="form-actions">
+                <button type="button" class="btn-primary btn-auth-submit" id="btn-reset-submit-step1">Send OTP</button>
+                <button type="submit" class="btn-primary btn-auth-submit hidden" id="btn-reset-submit-final">Reset Password</button>
+              </div>
+            </form>
+
+            <p class="auth-switch-prompt">Don't have an account? <a href="#" data-view="register">Apply Pass</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         VIEW 4: VISITOR DASHBOARD
+         ========================================================================== -->
+    <section class="app-view hidden" id="view-visitor-dashboard">
+      <div class="dashboard-container">
+        
+        <!-- Left Sidebar: Profile card & Menu -->
+        <aside class="dashboard-sidebar-profile">
+          <div class="glass-card profile-summary-card">
+            <div class="profile-avatar-wrapper">
+              <img class="profile-avatar-img" id="visitor-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop" alt="Profile Photograph">
+            </div>
+            <h3 class="profile-name" id="visitor-profile-name">Loading...</h3>
+            <span class="profile-role-badge">Visitor account</span>
+            
+            <div class="profile-details-list">
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">Email:</span>
+                <span class="profile-detail-value" id="visitor-profile-email">---</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">Mobile:</span>
+                <span class="profile-detail-value" id="visitor-profile-mobile">---</span>
+              </div>
+              <div class="profile-detail-item">
+                <span class="profile-detail-label">Gov ID:</span>
+                <span class="profile-detail-value" id="visitor-profile-id">---</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation inside Dashboard -->
+          <div class="glass-card" style="padding: 1rem;">
+            <ul class="sidebar-nav-list">
+              <li class="sidebar-nav-item active" data-dashview="active-pass">
+                <button>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <span>Active Pass / QR</span>
+                </button>
+              </li>
+              <li class="sidebar-nav-item" data-dashview="apply-pass">
+                <button>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  <span>Request Pass</span>
+                </button>
+              </li>
+              <li class="sidebar-nav-item" data-dashview="visit-history">
+                <button>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                  <span>Pass History</span>
+                </button>
+              </li>
+              <li class="sidebar-nav-item" data-dashview="edit-profile">
+                <button>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <span>Edit Profile</span>
+                </button>
+              </li>
+              <li class="sidebar-nav-item" id="btn-visitor-logout">
+                <button style="color: var(--color-error);">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <span>Logout</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- Right Main Dashboard view switcher -->
+        <div class="dashboard-main-content">
+          
+          <!-- SUBVIEW 1: ACTIVE PASS / PRINT QR PASS -->
+          <div class="dash-view-panel" id="dash-view-active-pass">
+            <div class="view-section-header">
+              <h2>Active / Upcoming Pass</h2>
+              <div id="active-pass-header-actions" class="hidden">
+                <button class="btn-primary" id="btn-print-pass-card" style="font-size:0.8rem; padding:0.4rem 0.8rem;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                  <span>Print Pass</span>
+                </button>
+                <button class="btn-secondary" id="btn-pdf-pass-card" style="font-size:0.8rem; padding:0.4rem 0.8rem;">
+                  <span>Download PDF</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Pass status detail layout -->
+            <div id="no-active-pass-prompt" class="glass-card" style="text-align: center; padding: 3rem;">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="color: var(--color-text-muted); margin-bottom: 1rem;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <h3>No Active Visit Permits</h3>
+              <p style="margin-bottom: 1.5rem;">You do not currently have any pending or active visitor passes scheduled.</p>
+              <button class="btn-primary" id="btn-go-request-pass">Request Visitor Pass</button>
+            </div>
+
+            <div class="pass-detail-grid hidden" id="active-pass-detail-box">
+              
+              <!-- Printable pass component area -->
+              <div id="print-area">
+                <div class="visitor-pass-card" id="visitor-pass-container">
+                  <div class="pass-header">
+                    <div class="pass-brand">
+                      <div class="pass-brand-logo">
+                        <img src="images/logo.png" alt="NALCO Logo" style="height: 38px; width: 38px; border-radius: 4px;">
+                      </div>
+                      <div class="pass-brand-name">
+                        <h3>NALCO India</h3>
+                        <p>Visitor Entry Permit</p>
+                      </div>
+                    </div>
+                    <span class="pass-id-tag" id="pass-tag-id">NALCO-2026-10001</span>
+                  </div>
+
+                  <div class="pass-body">
+                    <!-- Photo -->
+                    <div class="pass-photo-box">
+                      <img class="pass-photo" id="pass-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop" alt="Visitor Photograph">
+                    </div>
+                    
+                    <!-- Details Table -->
+                    <div>
+                      <table class="pass-details-table">
+                        <tr>
+                          <td class="label">Visitor Name</td>
+                          <td class="value" id="pass-val-name">Loading...</td>
+                        </tr>
+                        <tr>
+                          <td class="label">Host Employee</td>
+                          <td class="value" id="pass-val-host">---</td>
+                        </tr>
+                        <tr>
+                          <td class="label">Department</td>
+                          <td class="value" id="pass-val-dept">---</td>
+                        </tr>
+                        <tr>
+                          <td class="label">Visit Date</td>
+                          <td class="value" id="pass-val-date">---</td>
+                        </tr>
+                        <tr>
+                          <td class="label">Valid Timings</td>
+                          <td class="value" id="pass-val-timings">09:00 AM - 05:00 PM</td>
+                        </tr>
+                        <tr>
+                          <td class="label">Pass Status</td>
+                          <td class="value">
+                            <span class="pass-status-badge status-approved" id="pass-val-status">Approved</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+
+                    <!-- QR Section -->
+                    <div class="pass-qr-section">
+                      <div class="pass-qr-code" id="pass-qrcode-box">
+                        <!-- Canvas will be created dynamically -->
+                      </div>
+                      <div class="pass-instructions">
+                        <h4>Security Protocols</h4>
+                        <ul>
+                          <li>Keep this pass displayed visibly inside the facility.</li>
+                          <li>Visitor is restricted to approved department sectors.</li>
+                          <li>Photography/videography is prohibited inside smelting units.</li>
+                          <li>Please scan checkout token at the gate before leaving.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pass status side information -->
+              <div class="glass-card">
+                <h3>Pass Status Info</h3>
+                <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                  <div>
+                    <span style="font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase;">Approval Remarks:</span>
+                    <p style="font-size: 0.9rem;" id="active-pass-remarks">No remarks from security administrator yet.</p>
+                  </div>
+                  <div style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
+                    <span style="font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase;">Security QR Token:</span>
+                    <div style="font-family: monospace; font-size: 0.8rem; background: var(--color-bg-input); padding: 0.4rem; border-radius: 0.25rem; word-break: break-all; margin-top: 0.25rem;" id="active-pass-qr-token">
+                      ---
+                    </div>
+                  </div>
+                  <div style="border-top: 1px solid var(--color-border); padding-top: 1rem;">
+                    <span style="font-size: 0.78rem; color: var(--color-text-muted); text-transform: uppercase;">Check Gate Activity:</span>
+                    <p style="font-size: 0.88rem; color: var(--color-text-secondary); margin-top: 0.2rem;">
+                      Check-In: <strong id="active-pass-checkin-time">Not Checked-In</strong><br>
+                      Check-Out: <strong id="active-pass-checkout-time">Not Checked-Out</strong>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- SUBVIEW 2: REQUEST PASS APPLICATION -->
+          <div class="dash-view-panel hidden" id="dash-view-apply-pass">
+            <div class="view-section-header">
+              <h2>New Access Request Form</h2>
+            </div>
+            
+            <div class="glass-card">
+              <form id="pass-request-form" novalidate>
+                <div class="form-row form-row-2">
+                  <div class="form-group">
+                    <label for="pass-department">Department to Visit</label>
+                    <div class="input-wrapper">
+                      <select id="pass-department" class="form-control" required style="padding-left: 1rem;">
+                        <option value="" disabled selected>Select NALCO Department...</option>
+                        <!-- Seeded dynamic departments here -->
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="pass-employee">Employee to Meet (Host)</label>
+                    <div class="input-wrapper">
+                      <select id="pass-employee" class="form-control" required style="padding-left: 1rem;">
+                        <option value="" disabled selected>Select Host Employee...</option>
+                        <!-- Seeded dynamic employees here -->
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row form-row-2">
+                  <div class="form-group">
+                    <label for="pass-date">Visit Date</label>
+                    <div class="input-wrapper">
+                      <input type="date" id="pass-date" class="form-control" required style="padding-left: 1rem;">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="pass-purpose">Purpose of Visit</label>
+                    <div class="input-wrapper">
+                      <select id="pass-purpose" class="form-control" required style="padding-left: 1rem;">
+                        <option value="" disabled selected>Select Purpose...</option>
+                        <option value="Business Meeting">Corporate Meeting</option>
+                        <option value="Contract Audit">Contractual Works / Audits</option>
+                        <option value="Equipment Repair">Equipment Maintenance & Repair</option>
+                        <option value="Official Visit">Government/Official Inspection</option>
+                        <option value="Job Interview">Job Recruitment Process</option>
+                        <option value="Delivery">Material Supply / Delivery</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row form-row-2">
+                  <div class="form-group">
+                    <label for="pass-time-in">Expected Time In</label>
+                    <div class="input-wrapper">
+                      <input type="time" id="pass-time-in" class="form-control" value="09:00" required style="padding-left: 1rem;">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="pass-time-out">Expected Time Out</label>
+                    <div class="input-wrapper">
+                      <input type="time" id="pass-time-out" class="form-control" value="17:00" required style="padding-left: 1rem;">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                  <button type="submit" class="btn-primary" id="btn-submit-pass-req">
+                    <span>Submit Pass Request</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- SUBVIEW 3: VISIT HISTORY -->
+          <div class="dash-view-panel hidden" id="dash-view-visit-history">
+            <div class="view-section-header">
+              <h2>Permit Clearance History</h2>
+            </div>
+            
+            <div class="responsive-table-container">
+              <table class="enterprise-table" id="visitor-history-table">
+                <thead>
+                  <tr>
+                    <th>Pass ID</th>
+                    <th>Visit Date</th>
+                    <th>Host Name</th>
+                    <th>Department</th>
+                    <th>Purpose</th>
+                    <th>Check In/Out</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="visitor-history-rows">
+                  <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem;">Loading history logs...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- SUBVIEW 4: EDIT VISITOR PROFILE -->
+          <div class="dash-view-panel hidden" id="dash-view-edit-profile">
+            <div class="view-section-header">
+              <h2>Update Account Profile</h2>
+            </div>
+
+            <div class="glass-card">
+              <form id="edit-profile-form" novalidate>
+                <div class="form-group">
+                  <label for="edit-name">Full Name</label>
+                  <div class="input-wrapper">
+                    <input type="text" id="edit-name" class="form-control" required style="padding-left: 1rem;">
+                  </div>
+                </div>
+
+                <div class="form-row form-row-2">
+                  <div class="form-group">
+                    <label for="edit-company">Company/Organization</label>
+                    <div class="input-wrapper">
+                      <input type="text" id="edit-company" class="form-control" style="padding-left: 1rem;">
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="edit-emergency">Emergency Contact Details</label>
+                    <div class="input-wrapper">
+                      <input type="text" id="edit-emergency" class="form-control" required style="padding-left: 1rem;">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-row form-row-2">
+                  <div class="form-group">
+                    <label for="edit-vehicle">Vehicle Number (Optional)</label>
+                    <div class="input-wrapper">
+                      <input type="text" id="edit-vehicle" class="form-control" style="padding-left: 1rem;">
+                    </div>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label>Update Photo</label>
+                    <div class="file-upload-wrapper" id="edit-photo-container" style="padding: 0.8rem;">
+                      <input type="file" class="file-upload-input" id="edit-photo-file" accept="image/*">
+                      <div class="file-upload-label" style="flex-direction: row; gap: 0.5rem; justify-content: center;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px; height:20px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                        <span>Change Photo</span>
+                      </div>
+                    </div>
+                    <input type="hidden" id="edit-photo-base64">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="edit-address">Permanent Address</label>
+                  <div class="input-wrapper">
+                    <input type="text" id="edit-address" class="form-control" required style="padding-left: 1rem;">
+                  </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 1.5rem;">
+                  <button type="submit" class="btn-primary" id="btn-save-profile">
+                    <span>Save Profiles</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         VIEW 5: ENTERPRISE ADMIN DASHBOARD
+         ========================================================================== -->
+    <section class="app-view hidden" id="view-admin-dashboard" style="padding-top: 0;">
+      <div class="admin-layout">
+        
+        <!-- Sidebar Controls -->
+        <aside class="admin-sidebar">
+          <div class="admin-sidebar-brand">
+            <img src="images/logo.png" alt="NALCO Logo" style="height: 38px; width: 38px; border-radius: 4px;">
+            <div class="admin-sidebar-brand-text">
+              <h3>NALCO Admin</h3>
+              <p>Security Portal</p>
+            </div>
+          </div>
+
+          <ul class="admin-sidebar-menu">
+            <li class="admin-menu-item active" data-adminview="dashboard">
+              <button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+                <span>Stats & Charts</span>
+              </button>
+            </li>
+            <li class="admin-menu-item" data-adminview="passes">
+              <button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <span>Manage Approvals</span>
+              </button>
+            </li>
+            <li class="admin-menu-item" data-adminview="blacklist">
+              <button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                <span>Blacklist Registry</span>
+              </button>
+            </li>
+            <li class="admin-menu-item" data-adminview="auditlogs">
+              <button>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span>View Audit Logs</span>
+              </button>
+            </li>
+            <li class="admin-menu-item" data-adminview="scanner">
+              <button style="color: var(--color-secondary);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7z"/><path d="M14 7h3v3h-3z"/><path d="M7 14h3v3H7z"/><path d="M14 14h3v3h-3z"/></svg>
+                <span>Guard Desk Check-In</span>
+              </button>
+            </li>
+          </ul>
+
+          <div class="admin-sidebar-footer">
+            <div class="admin-user-info">
+              <div class="admin-user-avatar">SA</div>
+              <div class="admin-user-details">
+                <h4 id="admin-sidebar-username">Admin User</h4>
+                <p>Security Officer</p>
+              </div>
+            </div>
+            <button class="btn-admin-logout" id="btn-admin-logout" aria-label="Sign out admin">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
+          </div>
+        </aside>
+
+        <!-- Main View Area -->
+        <main class="admin-main">
+          <!-- Top Bar -->
+          <div class="admin-topbar">
+            <div class="admin-topbar-title">
+              <h2 id="admin-view-title">Admin Dashboard</h2>
+            </div>
+            <!-- Dynamic Actions (Export, print, etc.) -->
+            <div class="admin-topbar-actions" id="admin-global-actions">
+              <button class="btn-secondary" id="btn-export-excel" style="font-size:0.8rem; padding:0.4rem 0.8rem;">
+                <span>Export Report (CSV)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Content Switching Panel -->
+          <div class="admin-content-view">
+            
+            <!-- PANEL 1: DASHBOARD STATS & CHARTS -->
+            <div class="admin-view-panel" id="admin-view-dashboard">
+              <!-- Grid stats -->
+              <div class="stats-grid">
+                <div class="glass-card stat-card stat-card-total">
+                  <div class="stat-header">
+                    <span>Total Passes</span>
+                    <div class="stat-icon-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                  </div>
+                  <span class="stat-number" id="stat-total">0</span>
+                </div>
+                <div class="glass-card stat-card stat-card-today">
+                  <div class="stat-header">
+                    <span>Today's Visits</span>
+                    <div class="stat-icon-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </div>
+                  </div>
+                  <span class="stat-number" id="stat-today">0</span>
+                </div>
+                <div class="glass-card stat-card stat-card-pending">
+                  <div class="stat-header">
+                    <span>Pending</span>
+                    <div class="stat-icon-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                  </div>
+                  <span class="stat-number" id="stat-pending">0</span>
+                </div>
+                <div class="glass-card stat-card stat-card-approved">
+                  <div class="stat-header">
+                    <span>Approved</span>
+                    <div class="stat-icon-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                  </div>
+                  <span class="stat-number" id="stat-approved">0</span>
+                </div>
+                <div class="glass-card stat-card stat-card-in">
+                  <div class="stat-header">
+                    <span>Checked-In</span>
+                    <div class="stat-icon-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                    </div>
+                  </div>
+                  <span class="stat-number" id="stat-in">0</span>
+                </div>
+                <div class="glass-card stat-card stat-card-out">
+                  <div class="stat-header">
+                    <span>Checked-Out</span>
+                    <div class="stat-icon-box">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 9H4v6"/><path d="M14 15l7-7"/><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    </div>
+                  </div>
+                  <span class="stat-number" id="stat-out">0</span>
+                </div>
+              </div>
+
+              <!-- Graphs Row -->
+              <div class="admin-data-row admin-data-row-split">
+                <div class="glass-card">
+                  <h3>Visitor Registrations (Daily Volume)</h3>
+                  <div class="chart-card">
+                    <canvas id="chart-daily-visitors"></canvas>
+                  </div>
+                </div>
+                <div class="glass-card">
+                  <h3>Visitor Allocation (By Department)</h3>
+                  <div class="chart-card">
+                    <canvas id="chart-dept-distribution"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 2: MANAGE PERMITS / APPROVALS -->
+            <div class="admin-view-panel hidden" id="admin-view-passes">
+              <!-- Search, Filter & Controls bar -->
+              <div class="glass-card search-filter-bar">
+                <div class="search-input-wrapper">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" id="admin-search-query" class="form-control" placeholder="Search visitor name, company, or pass ID...">
+                </div>
+
+                <div class="filter-select-group">
+                  <select id="admin-filter-dept" class="filter-select">
+                    <option value="All">All Departments</option>
+                  </select>
+
+                  <select id="admin-filter-host" class="filter-select">
+                    <option value="All">All Hosts</option>
+                  </select>
+
+                  <input type="date" id="admin-filter-date" class="form-control" style="width: 150px; padding: 0.5rem; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 0.5rem;">
+                  
+                  <button type="button" class="btn-primary" id="btn-admin-filter-apply" style="padding: 0.5rem 1rem;">Apply</button>
+                  <button type="button" class="btn-secondary" id="btn-admin-filter-clear" style="padding: 0.5rem 1rem;">Clear</button>
+                </div>
+              </div>
+
+              <!-- Visitor Approvals Table -->
+              <div class="responsive-table-container">
+                <table class="enterprise-table" id="admin-passes-table">
+                  <thead>
+                    <tr>
+                      <th>Pass ID</th>
+                      <th>Visitor Name</th>
+                      <th>Gov ID Details</th>
+                      <th>Host / Dept</th>
+                      <th>Purpose & Timing</th>
+                      <th>Status</th>
+                      <th style="text-align: right;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-passes-rows">
+                    <tr>
+                      <td colspan="7" style="text-align: center; padding: 2rem;">Loading visitor registries...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- PANEL 3: BLACKLIST REGISTRY -->
+            <div class="admin-view-panel hidden" id="admin-view-blacklist">
+              <div class="admin-data-row admin-data-row-main">
+                
+                <!-- Blacklist database table -->
+                <div class="responsive-table-container">
+                  <table class="enterprise-table" id="admin-blacklist-table">
+                    <thead>
+                      <tr>
+                        <th>Visitor Name</th>
+                        <th>Gov ID Number</th>
+                        <th>Reason for Restricting</th>
+                        <th>Created At</th>
+                        <th style="text-align: right;">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="admin-blacklist-rows">
+                      <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem;">Loading blacklist database...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Add Visitor to Blacklist form -->
+                <div class="glass-card">
+                  <h3>Add to Restricted Blacklist</h3>
+                  <p style="font-size:0.85rem; color:var(--color-text-secondary); margin-bottom: 1.25rem;">Blacklisted visitors are immediately blocked from generating passes or entering facilities.</p>
+                  
+                  <form id="admin-blacklist-form" novalidate>
+                    <div class="form-group">
+                      <label for="bl-name">Visitor Full Name</label>
+                      <input type="text" id="bl-name" class="form-control" placeholder="Full name of individual" required style="padding-left:1rem;">
+                    </div>
+
+                    <div class="form-row form-row-2">
+                      <div class="form-group">
+                        <label for="bl-id-type">Gov ID Type</label>
+                        <select id="bl-id-type" class="form-control" required style="padding-left:1rem;">
+                          <option value="Aadhaar">Aadhaar</option>
+                          <option value="PAN">PAN</option>
+                          <option value="Passport">Passport</option>
+                          <option value="Driving License">Driving License</option>
+                        </select>
+                      </div>
+
+                      <div class="form-group">
+                        <label for="bl-id-number">Gov ID Number</label>
+                        <input type="text" id="bl-id-number" class="form-control" placeholder="ID Card Number" required style="padding-left:1rem;">
+                      </div>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="bl-reason">Reason for Blacklisting</label>
+                      <textarea id="bl-reason" class="form-control" placeholder="Provide detailed audit reason..." required style="padding-left:1rem; height: 80px; font-family:var(--font-body); resize: none;"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; background: linear-gradient(135deg, var(--color-error), #b91c1c);">
+                      <span>Restrict Individual</span>
+                    </button>
+                  </form>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- PANEL 4: VIEW AUDIT LOGS -->
+            <div class="admin-view-panel hidden" id="admin-view-auditlogs">
+              <div class="view-section-header">
+                <h2>Security Log Operations</h2>
+              </div>
+              
+              <div class="responsive-table-container">
+                <table class="enterprise-table" id="admin-audit-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Operator User</th>
+                      <th>Action Triggered</th>
+                      <th>Device IP Address</th>
+                    </tr>
+                  </thead>
+                  <tbody id="admin-audit-rows">
+                    <tr>
+                      <td colspan="4" style="text-align: center; padding: 2rem;">Loading security audit logs...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- PANEL 5: GUARD SCANNER CHECK-IN CONSOLE -->
+            <div class="admin-view-panel hidden" id="admin-view-scanner">
+              <div class="view-section-header">
+                <h2>Checkpoint Verification</h2>
+              </div>
+
+              <div class="guard-scanner-grid">
+                <!-- Video Scan simulation -->
+                <div class="glass-card scanner-video-box">
+                  <div class="scanner-laser-line" id="guard-laser"></div>
+                  <div class="scanner-prompt">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    <div>
+                      <h3>Place QR Code in Camera View</h3>
+                      <p>Simulation: Enter the Visitor Pass ID or QR token value below to scan.</p>
+                    </div>
+                  </div>
+
+                  <div class="pass-manual-input-box">
+                    <input type="text" id="guard-qr-token-input" class="form-control" placeholder="e.g. NALCO-QR-89AB12CD" style="padding-left:1rem;">
+                    <button type="button" class="btn-primary" id="btn-guard-trigger-scan" style="padding:0.5rem 1rem;">Verify</button>
+                  </div>
+                </div>
+
+                <!-- Scanned result panel -->
+                <div class="glass-card" style="display: flex; flex-direction: column; justify-content: center; min-height: 280px;" id="guard-scan-result-card">
+                  <div style="text-align: center; color: var(--color-text-muted);" id="guard-scan-default-prompt">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:0.5rem;"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                    <p>Awaiting scan data input...</p>
+                  </div>
+
+                  <!-- Dynamic result details (Initially Hidden) -->
+                  <div class="scanned-visitor-card hidden" id="guard-scan-result-details">
+                    <div class="scanned-header">
+                      <img class="scanned-avatar" id="guard-scan-avatar" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop" alt="Visitor avatar">
+                      <div class="scanned-title-box">
+                        <h3 id="guard-scan-name">Loading...</h3>
+                        <p id="guard-scan-passid">Pass ID: NALCO-2026-10001</p>
+                      </div>
+                    </div>
+
+                    <div class="scanned-details-grid">
+                      <div class="scanned-detail-item">
+                        <h4>Host Employee</h4>
+                        <p id="guard-scan-host">Sri A.K. Senapati</p>
+                      </div>
+                      <div class="scanned-detail-item">
+                        <h4>Department</h4>
+                        <p id="guard-scan-dept">Smelter Plant</p>
+                      </div>
+                      <div class="scanned-detail-item">
+                        <h4>Identity Check</h4>
+                        <p id="guard-scan-id">Aadhaar (•••• 1234)</p>
+                      </div>
+                      <div class="scanned-detail-item">
+                        <h4>Expected Timings</h4>
+                        <p id="guard-scan-timings">09:00 - 17:00</p>
+                      </div>
+                    </div>
+
+                    <div class="scanned-actions">
+                      <button type="button" class="btn-primary btn-checkin" id="btn-guard-action-checkin">Check-In Permit</button>
+                      <button type="button" class="btn-secondary btn-checkout hidden" id="btn-guard-action-checkout">Check-Out Permit</button>
+                      <button type="button" class="btn-secondary" id="btn-guard-action-reset" style="margin-left: auto;">Reset Console</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+    </section>
+
+    <!-- ==========================================================================
+         VIEW 6: GUARD CHECKPOINT INDEPENDENT VIEW (For quick access from top nav)
+         ========================================================================== -->
+    <section class="app-view hidden" id="view-guard">
+      <div class="auth-view" style="max-width: 1000px; margin: 0 auto; width: 100%;">
+        <div class="auth-container" style="max-width: 100%;">
+          <div class="glass-card">
+            <div class="auth-logo-header">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-secondary);">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7z"/><path d="M14 7h3v3h-3z"/><path d="M7 14h3v3H7z"/><path d="M14 14h3v3h-3z"/>
+              </svg>
+              <h2>Security Check Gate Gatehouse</h2>
+              <p>Scan visitor passes to check in and check out visitors</p>
+            </div>
+            
+            <div id="guard-main-injector">
+              <!-- Javascript will inject the Guard Scanner view here dynamically to avoid code repetition -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- External libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Main JavaScript Logic -->
+  <script src="js/app.js"></script>
+</body>
+</html>

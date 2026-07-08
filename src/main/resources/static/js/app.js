@@ -234,7 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
       mainNav.innerHTML = `
         <li><a href="#" class="nav-link" data-view="home">Home</a></li>
         <li><a href="#" class="nav-link" data-view="${dashView}">Dashboard</a></li>
-        <li><a href="#" class="nav-link" data-view="guard">Checkpoint</a></li>
       `;
       authBox.innerHTML = `
         <button class="btn-secondary" id="btn-header-logout" style="padding:0.5rem 1rem;">Logout</button>
@@ -249,7 +248,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><a href="#" class="nav-link active" data-view="home">Home</a></li>
         <li><a href="#" class="nav-link" data-view="register">Apply Pass</a></li>
         <li><a href="#" class="nav-link" data-view="login">Sign In</a></li>
-        <li><a href="#" class="nav-link" data-view="guard">Security Checkpoint</a></li>
       `;
       authBox.innerHTML = `
         <a href="#" class="btn-primary" data-view="login">Sign In</a>
@@ -846,6 +844,62 @@ document.addEventListener('DOMContentLoaded', () => {
           submitBtn.disabled = false;
           submitBtn.innerHTML = 'Sign In';
         }
+      });
+    }
+
+    // Google / Apple Login Simulation
+    const btnGoogleLogin = document.getElementById('btn-google-login');
+    const btnAppleLogin = document.getElementById('btn-apple-login');
+
+    if (btnGoogleLogin) {
+      btnGoogleLogin.addEventListener('click', () => {
+        showToast('OAuth Integration', 'Redirecting to Google Account Secure Login...', 'success');
+        setTimeout(async () => {
+          try {
+            // Simulate logging in as a guest visitor via Google oauth
+            const loginRes = await mockOtpBypassLogin('guest.visitor@gmail.com');
+            appState.token = loginRes.token;
+            appState.role = loginRes.role;
+            appState.email = loginRes.email;
+            appState.fullName = 'Google User';
+
+            localStorage.setItem('nalco_token', appState.token);
+            localStorage.setItem('nalco_role', appState.role);
+            localStorage.setItem('nalco_email', appState.email);
+            localStorage.setItem('nalco_fullname', appState.fullName);
+
+            showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
+            navigate('visitor-dashboard');
+          } catch (err) {
+            showToast('OAuth Sign In Failed', err.message, 'error');
+          }
+        }, 1500);
+      });
+    }
+
+    if (btnAppleLogin) {
+      btnAppleLogin.addEventListener('click', () => {
+        showToast('OAuth Integration', 'Connecting to Apple ID Secure Sign In...', 'success');
+        setTimeout(async () => {
+          try {
+            // Simulate logging in as a guest visitor via Apple oauth
+            const loginRes = await mockOtpBypassLogin('guest.visitor@apple.com');
+            appState.token = loginRes.token;
+            appState.role = loginRes.role;
+            appState.email = loginRes.email;
+            appState.fullName = 'Apple User';
+
+            localStorage.setItem('nalco_token', appState.token);
+            localStorage.setItem('nalco_role', appState.role);
+            localStorage.setItem('nalco_email', appState.email);
+            localStorage.setItem('nalco_fullname', appState.fullName);
+
+            showToast('OAuth Access Granted', 'Logged in via Apple ID System.', 'success');
+            navigate('visitor-dashboard');
+          } catch (err) {
+            showToast('OAuth Sign In Failed', err.message, 'error');
+          }
+        }, 1500);
       });
     }
 
