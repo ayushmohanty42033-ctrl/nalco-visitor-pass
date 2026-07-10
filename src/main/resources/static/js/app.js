@@ -941,12 +941,58 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Google / Apple Login Setup
+    const runGoogleSimulation = async () => {
+      showToast('OAuth Config Issue', 'Invalid Firebase Key. Launching Google login simulation...', 'warning');
+      setTimeout(async () => {
+        try {
+          const loginRes = await mockOtpBypassLogin('guest.visitor@gmail.com');
+          appState.token = loginRes.token;
+          appState.role = loginRes.role;
+          appState.email = loginRes.email;
+          appState.fullName = loginRes.fullName || 'Google User';
+
+          localStorage.setItem('nalco_token', appState.token);
+          localStorage.setItem('nalco_role', appState.role);
+          localStorage.setItem('nalco_email', appState.email);
+          localStorage.setItem('nalco_fullname', appState.fullName);
+
+          showToast('OAuth Access Granted', 'Logged in via Simulated Google Identity.', 'success');
+          navigate('visitor-dashboard');
+        } catch (err) {
+          showToast('OAuth Sign In Failed', err.message, 'error');
+        }
+      }, 1500);
+    };
+
+    const runAppleSimulation = async () => {
+      showToast('OAuth Config Issue', 'Invalid Firebase Key. Launching Apple login simulation...', 'warning');
+      setTimeout(async () => {
+        try {
+          const loginRes = await mockOtpBypassLogin('guest.visitor@apple.com');
+          appState.token = loginRes.token;
+          appState.role = loginRes.role;
+          appState.email = loginRes.email;
+          appState.fullName = loginRes.fullName || 'Apple User';
+
+          localStorage.setItem('nalco_token', appState.token);
+          localStorage.setItem('nalco_role', appState.role);
+          localStorage.setItem('nalco_email', appState.email);
+          localStorage.setItem('nalco_fullname', appState.fullName);
+
+          showToast('OAuth Access Granted', 'Logged in via Simulated Apple ID System.', 'success');
+          navigate('visitor-dashboard');
+        } catch (err) {
+          showToast('OAuth Sign In Failed', err.message, 'error');
+        }
+      }, 1500);
+    };
+
     const socialConfigs = [
-      { googleId: 'btn-google-login', appleId: 'btn-apple-login', label: 'Google Identity', appleLabel: 'Apple ID System' },
-      { googleId: 'btn-google-register', appleId: 'btn-apple-register', label: 'Google Identity', appleLabel: 'Apple ID System' }
+      { googleId: 'btn-google-login', appleId: 'btn-apple-login' },
+      { googleId: 'btn-google-register', appleId: 'btn-apple-register' }
     ];
 
-    socialConfigs.forEach(({ googleId, appleId, label, appleLabel }) => {
+    socialConfigs.forEach(({ googleId, appleId }) => {
       const btnGoogle = document.getElementById(googleId);
       const btnApple = document.getElementById(appleId);
 
@@ -983,29 +1029,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('OAuth Sign In Failed', data.message, 'error');
               }
             } catch (err) {
-              showToast('OAuth Sign In Failed', err.message, 'error');
-            }
-          } else {
-            showToast('OAuth Integration', 'Redirecting to Simulated Google Secure Login...', 'success');
-            setTimeout(async () => {
-              try {
-                const loginRes = await mockOtpBypassLogin('guest.visitor@gmail.com');
-                appState.token = loginRes.token;
-                appState.role = loginRes.role;
-                appState.email = loginRes.email;
-                appState.fullName = loginRes.fullName || 'Google User';
-
-                localStorage.setItem('nalco_token', appState.token);
-                localStorage.setItem('nalco_role', appState.role);
-                localStorage.setItem('nalco_email', appState.email);
-                localStorage.setItem('nalco_fullname', appState.fullName);
-
-                showToast('OAuth Access Granted', 'Logged in via Simulated Google Identity.', 'success');
-                navigate('visitor-dashboard');
-              } catch (err) {
+              if (err.message && (err.message.includes('api-key-not-valid') || err.code === 'auth/api-key-not-valid')) {
+                await runGoogleSimulation();
+              } else {
                 showToast('OAuth Sign In Failed', err.message, 'error');
               }
-            }, 1500);
+            }
+          } else {
+            await runGoogleSimulation();
           }
         });
       }
@@ -1043,29 +1074,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('OAuth Sign In Failed', data.message, 'error');
               }
             } catch (err) {
-              showToast('OAuth Sign In Failed', err.message, 'error');
-            }
-          } else {
-            showToast('OAuth Integration', 'Connecting to Simulated Apple ID Secure Sign In...', 'success');
-            setTimeout(async () => {
-              try {
-                const loginRes = await mockOtpBypassLogin('guest.visitor@apple.com');
-                appState.token = loginRes.token;
-                appState.role = loginRes.role;
-                appState.email = loginRes.email;
-                appState.fullName = loginRes.fullName || 'Apple User';
-
-                localStorage.setItem('nalco_token', appState.token);
-                localStorage.setItem('nalco_role', appState.role);
-                localStorage.setItem('nalco_email', appState.email);
-                localStorage.setItem('nalco_fullname', appState.fullName);
-
-                showToast('OAuth Access Granted', 'Logged in via Simulated Apple ID System.', 'success');
-                navigate('visitor-dashboard');
-              } catch (err) {
+              if (err.message && (err.message.includes('api-key-not-valid') || err.code === 'auth/api-key-not-valid')) {
+                await runAppleSimulation();
+              } else {
                 showToast('OAuth Sign In Failed', err.message, 'error');
               }
-            }, 1500);
+            }
+          } else {
+            await runAppleSimulation();
           }
         });
       }
