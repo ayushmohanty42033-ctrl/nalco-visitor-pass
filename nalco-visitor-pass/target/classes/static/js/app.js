@@ -247,6 +247,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function navigate(viewName) {
+    // Resolve CTA aliases
+    if (viewName === 'register-cta') {
+      if (appState.token) {
+        viewName = appState.role === 'ROLE_ADMIN' ? 'admin-dashboard' : 'visitor-dashboard';
+      } else {
+        viewName = 'register';
+      }
+    } else if (viewName === 'apply-pass-cta') {
+      if (appState.token) {
+        if (appState.role === 'ROLE_ADMIN') {
+          viewName = 'admin-dashboard';
+        } else {
+          viewName = 'visitor-dashboard';
+          setTimeout(() => {
+            const applyPassItem = document.querySelector('[data-dashview="apply-pass"]');
+            if (applyPassItem) applyPassItem.click();
+          }, 50);
+        }
+      } else {
+        viewName = 'login';
+      }
+    } else if (viewName === 'download-pass-cta') {
+      if (appState.token) {
+        if (appState.role === 'ROLE_ADMIN') {
+          viewName = 'admin-dashboard';
+        } else {
+          viewName = 'visitor-dashboard';
+          setTimeout(() => {
+            const activePassItem = document.querySelector('[data-dashview="active-pass"]');
+            if (activePassItem) activePassItem.click();
+          }, 50);
+        }
+      } else {
+        viewName = 'login';
+      }
+    }
+
     // Hide all views
     document.querySelectorAll('.app-view').forEach(view => view.classList.add('hidden'));
 
