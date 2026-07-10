@@ -52,7 +52,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             System.out.println("Seeded administrator: admin@nalcoindia.co.in");
         }
 
-        // 2. Seed Default Visitor
+        // 2. Seed Default Visitor (utilizes CascadeType.ALL)
         if (userRepository.findByEmail("visitor@nalcoindia.co.in").isEmpty()) {
             User visitorUser = new User(
                 "visitor@nalcoindia.co.in",
@@ -60,7 +60,6 @@ public class DatabaseSeeder implements CommandLineRunner {
                 encoder.encode("Visitor@Nalco2026"),
                 "ROLE_VISITOR"
             );
-            userRepository.save(visitorUser);
 
             Visitor visitor = new Visitor();
             visitor.setUser(visitorUser);
@@ -71,7 +70,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             visitor.setAddress("Damanjodi, Koraput, Odisha");
             visitor.setEmergencyContact("9999999999");
             visitor.setVehicleNumber("OD-02-AB-1234");
-            visitorRepository.save(visitor);
+            visitorRepository.save(visitor); // Cascades to save visitorUser automatically
             System.out.println("Seeded test visitor: visitor@nalcoindia.co.in");
         }
 
