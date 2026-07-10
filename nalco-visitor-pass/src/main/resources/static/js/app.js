@@ -1029,10 +1029,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('OAuth Sign In Failed', data.message, 'error');
               }
             } catch (err) {
-              if (err.message && (err.message.includes('api-key-not-valid') || err.code === 'auth/api-key-not-valid')) {
+              const msg = err.message || '';
+              const code = err.code || '';
+              if (msg.includes('api-key-not-valid') || code === 'auth/api-key-not-valid') {
+                await runGoogleSimulation();
+              } else if (msg.includes('operation-not-allowed') || code === 'auth/operation-not-allowed') {
+                showToast('OAuth Config Warning', 'Google login is not enabled in your Firebase console. Running simulation...', 'warning');
                 await runGoogleSimulation();
               } else {
-                showToast('OAuth Sign In Failed', err.message, 'error');
+                showToast('OAuth Sign In Failed', msg, 'error');
               }
             }
           } else {
@@ -1074,10 +1079,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('OAuth Sign In Failed', data.message, 'error');
               }
             } catch (err) {
-              if (err.message && (err.message.includes('api-key-not-valid') || err.code === 'auth/api-key-not-valid')) {
+              const msg = err.message || '';
+              const code = err.code || '';
+              if (msg.includes('api-key-not-valid') || code === 'auth/api-key-not-valid') {
+                await runAppleSimulation();
+              } else if (msg.includes('operation-not-allowed') || code === 'auth/operation-not-allowed') {
+                showToast('OAuth Config Warning', 'Apple login is not enabled in your Firebase console. Running simulation...', 'warning');
                 await runAppleSimulation();
               } else {
-                showToast('OAuth Sign In Failed', err.message, 'error');
+                showToast('OAuth Sign In Failed', msg, 'error');
               }
             }
           } else {
