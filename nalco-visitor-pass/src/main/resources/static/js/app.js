@@ -941,128 +941,135 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Google / Apple Login Setup
-    const btnGoogleLogin = document.getElementById('btn-google-login');
-    const btnAppleLogin = document.getElementById('btn-apple-login');
+    const socialConfigs = [
+      { googleId: 'btn-google-login', appleId: 'btn-apple-login', label: 'Google Identity', appleLabel: 'Apple ID System' },
+      { googleId: 'btn-google-register', appleId: 'btn-apple-register', label: 'Google Identity', appleLabel: 'Apple ID System' }
+    ];
 
-    if (btnGoogleLogin) {
-      btnGoogleLogin.addEventListener('click', async () => {
-        if (firebaseEnabled) {
-          showToast('OAuth Integration', 'Opening Google Authentication Popup...', 'success');
-          try {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            const result = await firebase.auth().signInWithPopup(provider);
-            const idToken = await result.user.getIdToken();
-            
-            showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
-            const response = await fetch('/api/auth/firebase-login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken: idToken })
-            });
-            const data = await response.json();
-            if (data.success) {
-              appState.token = data.token;
-              appState.role = data.role;
-              appState.email = data.email;
-              appState.fullName = data.fullName || 'Google User';
+    socialConfigs.forEach(({ googleId, appleId, label, appleLabel }) => {
+      const btnGoogle = document.getElementById(googleId);
+      const btnApple = document.getElementById(appleId);
 
-              localStorage.setItem('nalco_token', appState.token);
-              localStorage.setItem('nalco_role', appState.role);
-              localStorage.setItem('nalco_email', appState.email);
-              localStorage.setItem('nalco_fullname', appState.fullName);
-
-              showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
-              navigate('visitor-dashboard');
-            } else {
-              showToast('OAuth Sign In Failed', data.message, 'error');
-            }
-          } catch (err) {
-            showToast('OAuth Sign In Failed', err.message, 'error');
-          }
-        } else {
-          showToast('OAuth Integration', 'Redirecting to Simulated Google Secure Login...', 'success');
-          setTimeout(async () => {
+      if (btnGoogle) {
+        btnGoogle.addEventListener('click', async () => {
+          if (firebaseEnabled) {
+            showToast('OAuth Integration', 'Opening Google Authentication Popup...', 'success');
             try {
-              const loginRes = await mockOtpBypassLogin('guest.visitor@gmail.com');
-              appState.token = loginRes.token;
-              appState.role = loginRes.role;
-              appState.email = loginRes.email;
-              appState.fullName = loginRes.fullName || 'Google User';
+              const provider = new firebase.auth.GoogleAuthProvider();
+              const result = await firebase.auth().signInWithPopup(provider);
+              const idToken = await result.user.getIdToken();
+              
+              showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
+              const response = await fetch('/api/auth/firebase-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken })
+              });
+              const data = await response.json();
+              if (data.success) {
+                appState.token = data.token;
+                appState.role = data.role;
+                appState.email = data.email;
+                appState.fullName = data.fullName || 'Google User';
 
-              localStorage.setItem('nalco_token', appState.token);
-              localStorage.setItem('nalco_role', appState.role);
-              localStorage.setItem('nalco_email', appState.email);
-              localStorage.setItem('nalco_fullname', appState.fullName);
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
 
-              showToast('OAuth Access Granted', 'Logged in via Simulated Google Identity.', 'success');
-              navigate('visitor-dashboard');
+                showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
+                navigate('visitor-dashboard');
+              } else {
+                showToast('OAuth Sign In Failed', data.message, 'error');
+              }
             } catch (err) {
               showToast('OAuth Sign In Failed', err.message, 'error');
             }
-          }, 1500);
-        }
-      });
-    }
+          } else {
+            showToast('OAuth Integration', 'Redirecting to Simulated Google Secure Login...', 'success');
+            setTimeout(async () => {
+              try {
+                const loginRes = await mockOtpBypassLogin('guest.visitor@gmail.com');
+                appState.token = loginRes.token;
+                appState.role = loginRes.role;
+                appState.email = loginRes.email;
+                appState.fullName = loginRes.fullName || 'Google User';
 
-    if (btnAppleLogin) {
-      btnAppleLogin.addEventListener('click', async () => {
-        if (firebaseEnabled) {
-          showToast('OAuth Integration', 'Opening Apple Authentication Popup...', 'success');
-          try {
-            const provider = new firebase.auth.OAuthProvider('apple.com');
-            const result = await firebase.auth().signInWithPopup(provider);
-            const idToken = await result.user.getIdToken();
-            
-            showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
-            const response = await fetch('/api/auth/firebase-login', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ idToken: idToken })
-            });
-            const data = await response.json();
-            if (data.success) {
-              appState.token = data.token;
-              appState.role = data.role;
-              appState.email = data.email;
-              appState.fullName = data.fullName || 'Apple User';
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
 
-              localStorage.setItem('nalco_token', appState.token);
-              localStorage.setItem('nalco_role', appState.role);
-              localStorage.setItem('nalco_email', appState.email);
-              localStorage.setItem('nalco_fullname', appState.fullName);
-
-              showToast('OAuth Access Granted', 'Logged in via Apple ID System.', 'success');
-              navigate('visitor-dashboard');
-            } else {
-              showToast('OAuth Sign In Failed', data.message, 'error');
-            }
-          } catch (err) {
-            showToast('OAuth Sign In Failed', err.message, 'error');
+                showToast('OAuth Access Granted', 'Logged in via Simulated Google Identity.', 'success');
+                navigate('visitor-dashboard');
+              } catch (err) {
+                showToast('OAuth Sign In Failed', err.message, 'error');
+              }
+            }, 1500);
           }
-        } else {
-          showToast('OAuth Integration', 'Connecting to Simulated Apple ID Secure Sign In...', 'success');
-          setTimeout(async () => {
+        });
+      }
+
+      if (btnApple) {
+        btnApple.addEventListener('click', async () => {
+          if (firebaseEnabled) {
+            showToast('OAuth Integration', 'Opening Apple Authentication Popup...', 'success');
             try {
-              const loginRes = await mockOtpBypassLogin('guest.visitor@apple.com');
-              appState.token = loginRes.token;
-              appState.role = loginRes.role;
-              appState.email = loginRes.email;
-              appState.fullName = loginRes.fullName || 'Apple User';
+              const provider = new firebase.auth.OAuthProvider('apple.com');
+              const result = await firebase.auth().signInWithPopup(provider);
+              const idToken = await result.user.getIdToken();
+              
+              showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
+              const response = await fetch('/api/auth/firebase-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken })
+              });
+              const data = await response.json();
+              if (data.success) {
+                appState.token = data.token;
+                appState.role = data.role;
+                appState.email = data.email;
+                appState.fullName = data.fullName || 'Apple User';
 
-              localStorage.setItem('nalco_token', appState.token);
-              localStorage.setItem('nalco_role', appState.role);
-              localStorage.setItem('nalco_email', appState.email);
-              localStorage.setItem('nalco_fullname', appState.fullName);
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
 
-              showToast('OAuth Access Granted', 'Logged in via Simulated Apple ID System.', 'success');
-              navigate('visitor-dashboard');
+                showToast('OAuth Access Granted', 'Logged in via Apple ID System.', 'success');
+                navigate('visitor-dashboard');
+              } else {
+                showToast('OAuth Sign In Failed', data.message, 'error');
+              }
             } catch (err) {
               showToast('OAuth Sign In Failed', err.message, 'error');
             }
-          }, 1500);
-        }
-      });
-    }
+          } else {
+            showToast('OAuth Integration', 'Connecting to Simulated Apple ID Secure Sign In...', 'success');
+            setTimeout(async () => {
+              try {
+                const loginRes = await mockOtpBypassLogin('guest.visitor@apple.com');
+                appState.token = loginRes.token;
+                appState.role = loginRes.role;
+                appState.email = loginRes.email;
+                appState.fullName = loginRes.fullName || 'Apple User';
+
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
+
+                showToast('OAuth Access Granted', 'Logged in via Simulated Apple ID System.', 'success');
+                navigate('visitor-dashboard');
+              } catch (err) {
+                showToast('OAuth Sign In Failed', err.message, 'error');
+              }
+            }, 1500);
+          }
+        });
+      }
+    });
 
     // Brand link redirects to Home page
     const brandLink = document.getElementById('nav-brand-link');
