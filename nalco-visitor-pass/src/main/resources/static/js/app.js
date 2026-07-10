@@ -189,13 +189,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 2. SINGLE PAGE ROUTER ---
 
   function initRouter() {
-    // Nav links
-    document.querySelectorAll('[data-view]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
+    // Nav links event delegation
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-view]');
+      if (trigger) {
         e.preventDefault();
         const targetView = trigger.getAttribute('data-view');
         navigate(targetView);
-      });
+      }
     });
 
     // Guard view injector
@@ -207,34 +208,37 @@ document.addEventListener('DOMContentLoaded', () => {
       setupGuardScannerLogic(guardConsoleContainer);
     }
 
-    // Direct dashboard view triggers
-    document.querySelectorAll('[data-dashview]').forEach(item => {
-      item.addEventListener('click', () => {
+    // Direct dashboard view triggers delegation
+    document.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-dashview]');
+      if (item) {
         document.querySelectorAll('[data-dashview]').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         const dashView = item.getAttribute('data-dashview');
         showDashboardSubview(dashView);
-      });
+      }
     });
 
-    // Central empty state Request Pass CTA click handler
-    const btnGoRequestPass = document.getElementById('btn-go-request-pass');
-    if (btnGoRequestPass) {
-      btnGoRequestPass.addEventListener('click', () => {
+    // Central empty state Request Pass CTA click handler delegation
+    document.addEventListener('click', (e) => {
+      const btnGoRequestPass = e.target.closest('#btn-go-request-pass');
+      if (btnGoRequestPass) {
         const applyPassItem = document.querySelector('[data-dashview="apply-pass"]');
         if (applyPassItem) {
           applyPassItem.click();
         }
-      });
-    }
+      }
+    });
 
-    document.querySelectorAll('[data-adminview]').forEach(item => {
-      item.addEventListener('click', () => {
+    // Admin view triggers delegation
+    document.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-adminview]');
+      if (item) {
         document.querySelectorAll('[data-adminview]').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         const adminView = item.getAttribute('data-adminview');
         showAdminSubview(adminView);
-      });
+      }
     });
 
     // Handle home screen routing from active state
@@ -315,21 +319,6 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
       clearSessionTimeout();
     }
-
-    // Reattach listeners to new nav links
-    document.querySelectorAll('#main-nav-links [data-view]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetView = trigger.getAttribute('data-view');
-        navigate(targetView);
-      });
-    });
-    document.querySelectorAll('#auth-buttons-container [data-view]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigate(trigger.getAttribute('data-view'));
-      });
-    });
   }
 
   function showDashboardSubview(subview) {

@@ -217,6 +217,17 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
 
+    // Central empty state Request Pass CTA click handler
+    const btnGoRequestPass = document.getElementById('btn-go-request-pass');
+    if (btnGoRequestPass) {
+      btnGoRequestPass.addEventListener('click', () => {
+        const applyPassItem = document.querySelector('[data-dashview="apply-pass"]');
+        if (applyPassItem) {
+          applyPassItem.click();
+        }
+      });
+    }
+
     document.querySelectorAll('[data-adminview]').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelectorAll('[data-adminview]').forEach(el => el.classList.remove('active'));
