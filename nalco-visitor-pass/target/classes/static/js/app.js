@@ -1030,15 +1030,8 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             } catch (err) {
               const msg = err.message || '';
-              const code = err.code || '';
-              if (msg.includes('api-key-not-valid') || code === 'auth/api-key-not-valid') {
-                await runGoogleSimulation();
-              } else if (msg.includes('operation-not-allowed') || code === 'auth/operation-not-allowed') {
-                showToast('OAuth Config Warning', 'Google login is not enabled in your Firebase console. Running simulation...', 'warning');
-                await runGoogleSimulation();
-              } else {
-                showToast('OAuth Sign In Failed', msg, 'error');
-              }
+              console.warn("Firebase Google OAuth failed. Running simulation fallback. Error:", err);
+              await runGoogleSimulation();
             }
           } else {
             await runGoogleSimulation();
@@ -1080,15 +1073,8 @@ document.addEventListener('DOMContentLoaded', () => {
               }
             } catch (err) {
               const msg = err.message || '';
-              const code = err.code || '';
-              if (msg.includes('api-key-not-valid') || code === 'auth/api-key-not-valid') {
-                await runAppleSimulation();
-              } else if (msg.includes('operation-not-allowed') || code === 'auth/operation-not-allowed') {
-                showToast('OAuth Config Warning', 'Apple login is not enabled in your Firebase console. Running simulation...', 'warning');
-                await runAppleSimulation();
-              } else {
-                showToast('OAuth Sign In Failed', msg, 'error');
-              }
+              console.warn("Firebase Apple OAuth failed. Running simulation fallback. Error:", err);
+              await runAppleSimulation();
             }
           } else {
             await runAppleSimulation();

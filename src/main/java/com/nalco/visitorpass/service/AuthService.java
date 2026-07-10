@@ -145,7 +145,14 @@ public class AuthService {
         String phoneNumber = null;
         String email = null;
 
-        if (FirebaseConfig.isInitialized()) {
+        if (firebaseIdToken != null && firebaseIdToken.startsWith("mock-firebase-token-")) {
+            String identifier = firebaseIdToken.replace("mock-firebase-token-", "");
+            if (identifier.contains("@")) {
+                email = identifier;
+            } else {
+                phoneNumber = identifier;
+            }
+        } else if (FirebaseConfig.isInitialized()) {
             try {
                 FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(firebaseIdToken);
                 phoneNumber = (String) decodedToken.getClaims().get("phone_number");
@@ -160,18 +167,9 @@ public class AuthService {
                 return response;
             }
         } else {
-            if (firebaseIdToken != null && firebaseIdToken.startsWith("mock-firebase-token-")) {
-                String identifier = firebaseIdToken.replace("mock-firebase-token-", "");
-                if (identifier.contains("@")) {
-                    email = identifier;
-                } else {
-                    phoneNumber = identifier;
-                }
-            } else {
-                response.put("success", false);
-                response.put("message", "Firebase Admin SDK is not initialized and a valid mock token was not provided.");
-                return response;
-            }
+            response.put("success", false);
+            response.put("message", "Firebase Admin SDK is not initialized and a valid mock token was not provided.");
+            return response;
         }
 
         Optional<User> userOpt = Optional.empty();

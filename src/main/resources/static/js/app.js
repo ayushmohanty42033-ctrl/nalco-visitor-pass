@@ -942,14 +942,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Google / Apple Login Setup
     const runGoogleSimulation = async () => {
-      showToast('OAuth Config Issue', 'Invalid Firebase Key. Launching Google login simulation...', 'warning');
-      setTimeout(async () => {
-        try {
-          const loginRes = await mockOtpBypassLogin('guest.visitor@gmail.com');
-          appState.token = loginRes.token;
-          appState.role = loginRes.role;
-          appState.email = loginRes.email;
-          appState.fullName = loginRes.fullName || 'Google User';
+      showToast('OAuth Config Issue', 'Firebase issue detected. Running simulated Google login...', 'warning');
+      try {
+        const response = await fetch('/api/auth/firebase-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: 'mock-firebase-token-guest.visitor@gmail.com' })
+        });
+        const data = await response.json();
+        if (data.success) {
+          appState.token = data.token;
+          appState.role = data.role;
+          appState.email = data.email;
+          appState.fullName = data.fullName || 'Google User';
 
           localStorage.setItem('nalco_token', appState.token);
           localStorage.setItem('nalco_role', appState.role);
@@ -958,21 +963,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
           showToast('OAuth Access Granted', 'Logged in via Simulated Google Identity.', 'success');
           navigate('visitor-dashboard');
-        } catch (err) {
-          showToast('OAuth Sign In Failed', err.message, 'error');
+        } else {
+          showToast('OAuth Sign In Failed', data.message, 'error');
         }
-      }, 1500);
+      } catch (err) {
+        showToast('OAuth Sign In Failed', err.message, 'error');
+      }
     };
 
     const runAppleSimulation = async () => {
-      showToast('OAuth Config Issue', 'Invalid Firebase Key. Launching Apple login simulation...', 'warning');
-      setTimeout(async () => {
-        try {
-          const loginRes = await mockOtpBypassLogin('guest.visitor@apple.com');
-          appState.token = loginRes.token;
-          appState.role = loginRes.role;
-          appState.email = loginRes.email;
-          appState.fullName = loginRes.fullName || 'Apple User';
+      showToast('OAuth Config Issue', 'Firebase issue detected. Running simulated Apple ID login...', 'warning');
+      try {
+        const response = await fetch('/api/auth/firebase-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: 'mock-firebase-token-guest.visitor@apple.com' })
+        });
+        const data = await response.json();
+        if (data.success) {
+          appState.token = data.token;
+          appState.role = data.role;
+          appState.email = data.email;
+          appState.fullName = data.fullName || 'Apple User';
 
           localStorage.setItem('nalco_token', appState.token);
           localStorage.setItem('nalco_role', appState.role);
@@ -981,10 +993,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
           showToast('OAuth Access Granted', 'Logged in via Simulated Apple ID System.', 'success');
           navigate('visitor-dashboard');
-        } catch (err) {
-          showToast('OAuth Sign In Failed', err.message, 'error');
+        } else {
+          showToast('OAuth Sign In Failed', data.message, 'error');
         }
-      }, 1500);
+      } catch (err) {
+        showToast('OAuth Sign In Failed', err.message, 'error');
+      }
     };
 
     const socialConfigs = [
