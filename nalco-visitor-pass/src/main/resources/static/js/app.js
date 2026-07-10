@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
   const firebaseConfig = {
-    apiKey: "AIzaSyDFe_suHr7e0Np5o52VUqj907Qds1h4kQw",
+    apiKey: "AIzaSyDFe_suHr7e0Np5o52VUqj9O7Qds1h4kQw",
     authDomain: "visitor-pass-27e01.firebaseapp.com",
     projectId: "visitor-pass-27e01",
     storageBucket: "visitor-pass-27e01.firebasestorage.app",
