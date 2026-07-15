@@ -1048,16 +1048,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (btnGoogle) {
         btnGoogle.addEventListener('click', async () => {
-          showToast('OAuth Integration', 'Opening Google Authentication Gateway...', 'info');
-          setTimeout(async () => {
+          if (firebaseEnabled) {
+            showToast('OAuth Integration', 'Opening Google Authentication Gateway...', 'info');
+            try {
+              const provider = new firebase.auth.GoogleAuthProvider();
+              const result = await firebase.auth().signInWithPopup(provider);
+              const idToken = await result.user.getIdToken();
+              
+              showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
+              const response = await fetch('/api/auth/firebase-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken })
+              });
+              const data = await response.json();
+              if (data.success) {
+                appState.token = data.token;
+                appState.role = data.role;
+                appState.email = data.email;
+                appState.fullName = data.fullName || 'Google User';
+
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
+
+                showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
+                navigate('visitor-dashboard');
+              } else {
+                showToast('OAuth Sign In Failed', data.message, 'error');
+              }
+            } catch (err) {
+              console.warn("Firebase Google OAuth failed. Running simulation fallback. Error:", err);
+              await runGoogleSimulation();
+            }
+          } else {
             await runGoogleSimulation();
-          }, 800);
+          }
         });
       }
 
       if (btnApple) {
         btnApple.addEventListener('click', async () => {
-          showToast('OAuth Integration', 'Connecting to Apple ID Secure Enclave...', 'info');
+          showToast('OAuth Integration', 'Connecting to Apple ID Secure Enclave (Dummy Mode)...', 'info');
           setTimeout(async () => {
             await runAppleSimulation();
           }, 800);
