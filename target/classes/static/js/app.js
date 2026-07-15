@@ -1279,6 +1279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (passReqForm) {
       passReqForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        console.log("Submit Pass Request clicked. Intercepting form submission...");
 
         const department = document.getElementById('pass-department').value;
         const employeeToMeet = document.getElementById('pass-employee').value;
@@ -1287,8 +1288,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const expectedTimeIn = document.getElementById('pass-time-in').value;
         const expectedTimeOut = document.getElementById('pass-time-out').value;
 
+        console.log(`Fields gathered. Dept: ${department}, Host: ${employeeToMeet}, Date: ${visitDate}. Opening safety induction quiz...`);
+
         // Open Safety Induction Quiz before final submission
         openQuiz(async () => {
+          console.log("Quiz passed successfully! Completing final pass registration...");
           try {
             const submitBtn = document.getElementById('btn-submit-pass-req');
             submitBtn.disabled = true;
@@ -2694,6 +2698,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnCloseQuiz = document.getElementById('btn-close-quiz-modal');
 
   function openQuiz(onPassed) {
+    console.log("openQuiz() invoked. Setting up safety quiz parameters...");
     // Reset state
     quizState.questions = [...safetyQuestionsPool].sort(() => 0.5 - Math.random()).slice(0, 10);
     quizState.currentIdx = 0;
@@ -2713,6 +2718,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnQuizProceed.style.display = 'none';
 
     // Show modal
+    console.log("Opening safety-quiz-modal by removing 'hidden' class...");
     quizModal.classList.remove('hidden');
   }
 

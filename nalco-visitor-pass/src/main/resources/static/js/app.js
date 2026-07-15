@@ -1,56 +1,6 @@
 /* ==========================================================================
    NALCO Visitor Pass Portal - Core Frontend Application
    ========================================================================== */
-
-// Hook into console for diagnostics
-(function() {
-  const originalLog = console.log;
-  const originalError = console.error;
-  const originalWarn = console.warn;
-
-  function appendLog(type, args) {
-    const content = document.getElementById('diagnostic-log-content');
-    if (content) {
-      const msg = Array.from(args).map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
-      const div = document.createElement('div');
-      div.style.borderBottom = '1px solid rgba(255, 255, 255, 0.05)';
-      div.style.padding = '2px 0';
-      if (type === 'error') div.style.color = '#ff5555';
-      if (type === 'warn') div.style.color = '#ffff55';
-      div.textContent = `[${new Date().toLocaleTimeString()}] [${type.toUpperCase()}] ${msg}`;
-      content.appendChild(div);
-      content.scrollTop = content.scrollHeight;
-    }
-  }
-
-  console.log = function() {
-    originalLog.apply(console, arguments);
-    appendLog('info', arguments);
-  };
-  console.error = function() {
-    originalError.apply(console, arguments);
-    appendLog('error', arguments);
-  };
-  console.warn = function() {
-    originalWarn.apply(console, arguments);
-    appendLog('warn', arguments);
-  };
-})();
-
-// Global Error Handler for diagnostics
-window.onerror = function(message, source, lineno, colno, error) {
-  try {
-    if (typeof showToast === 'function') {
-      showToast('Client Error', `${message} (Line ${lineno}:${colno})`, 'error');
-    } else {
-      alert(`Client Error: ${message} (Line ${lineno}:${colno})`);
-    }
-  } catch (e) {
-    alert(`Client Error: ${message} (Line ${lineno}:${colno})`);
-  }
-  return false;
-};
-
 document.addEventListener('DOMContentLoaded', () => {
   // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
   const firebaseConfig = {
