@@ -1,5 +1,6 @@
 /Users/ayushmohanty/.gemini/antigravity/scratch/nalco-visitor-pass/src/main/java/com/nalco/visitorpass/VisitorpassApplication.java
 /Users/ayushmohanty/.gemini/antigravity/scratch/nalco-visitor-pass/src/main/java/com/nalco/visitorpass/config/DatabaseSeeder.java
+/Users/ayushmohanty/.gemini/antigravity/scratch/nalco-visitor-pass/src/main/java/com/nalco/visitorpass/config/FirebaseConfig.java
 /Users/ayushmohanty/.gemini/antigravity/scratch/nalco-visitor-pass/src/main/java/com/nalco/visitorpass/config/JwtAuthenticationFilter.java
 /Users/ayushmohanty/.gemini/antigravity/scratch/nalco-visitor-pass/src/main/java/com/nalco/visitorpass/config/JwtTokenUtil.java
 /Users/ayushmohanty/.gemini/antigravity/scratch/nalco-visitor-pass/src/main/java/com/nalco/visitorpass/config/RateLimitingFilter.java

@@ -14,6 +14,7 @@ com/nalco/visitorpass/entity/Employee.class
 com/nalco/visitorpass/repository/UserRepository.class
 com/nalco/visitorpass/config/RateLimitingFilter$IpRequestTracker.class
 com/nalco/visitorpass/entity/Department.class
+com/nalco/visitorpass/config/FirebaseConfig.class
 com/nalco/visitorpass/entity/OTPLog.class
 com/nalco/visitorpass/service/OtpMailService.class
 com/nalco/visitorpass/config/DatabaseSeeder.class
