@@ -2,6 +2,20 @@
    NALCO Visitor Pass Portal - Core Frontend Application
    ========================================================================== */
 
+// Global Error Handler for diagnostics
+window.onerror = function(message, source, lineno, colno, error) {
+  try {
+    if (typeof showToast === 'function') {
+      showToast('Client Error', `${message} (Line ${lineno}:${colno})`, 'error');
+    } else {
+      alert(`Client Error: ${message} (Line ${lineno}:${colno})`);
+    }
+  } catch (e) {
+    alert(`Client Error: ${message} (Line ${lineno}:${colno})`);
+  }
+  return false;
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
   const firebaseConfig = {
