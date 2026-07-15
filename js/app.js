@@ -1109,10 +1109,12 @@ document.addEventListener('DOMContentLoaded', () => {
           if (firebaseEnabled) {
             showToast('OAuth Integration', 'Redirecting to Google Secure Gate...', 'info');
             try {
+              localStorage.setItem('google_login_pending', 'true');
               const provider = new firebase.auth.GoogleAuthProvider();
               await firebase.auth().signInWithRedirect(provider);
             } catch (err) {
               console.warn("Firebase Google OAuth redirect initiation failed. Error:", err);
+              localStorage.removeItem('google_login_pending');
               await runGoogleSimulation();
             }
           } else {
@@ -2958,10 +2960,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }).catch((error) => {
         console.warn("Firebase redirect auth failed on load:", error);
-        if (error.code !== 'auth/web-storage-unsupported') {
-          runGoogleSimulation();
-        }
       });
+
+      // 3. Fallback to simulation if Google login was triggered but failed to issue token in 3.5s
+      if (localStorage.getItem('google_login_pending') === 'true') {
+        localStorage.removeItem('google_login_pending');
+        setTimeout(() => {
+          if (!appState.token) {
+            console.warn("Google OAuth redirect failed to establish session. Running simulated fallback...");
+            runGoogleSimulation();
+          }
+        }, 3500);
+      }
     } catch (err) {
       console.error("Firebase redirect result handling failed:", err);
     }
