@@ -3,6 +3,53 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- FIREBASE COMPAT AUTHENTICATION SETUP ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFe_suHr7e0Np5o52VUqj9O7Qds1h4kQw",
+    authDomain: "visitor-pass-27e01.firebaseapp.com",
+    projectId: "visitor-pass-27e01",
+    storageBucket: "visitor-pass-27e01.firebasestorage.app",
+    messagingSenderId: "860586399009",
+    appId: "1:860586399009:web:f1d38001ca8eb14416da60",
+    measurementId: "G-RMCHF6CCCN"
+  };
+
+  let firebaseEnabled = false;
+  let recaptchaVerifier = null;
+  let confirmationResult = null;
+
+  if (firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY") {
+    try {
+      firebase.initializeApp(firebaseConfig);
+      firebaseEnabled = true;
+      console.log("Firebase Auth SDK successfully initialized.");
+    } catch (e) {
+      console.error("Firebase initialization failed:", e);
+    }
+  } else {
+    console.log("Firebase Auth keys not configured. Operating in simulated OTP mode.");
+  }
+
+  function initFirebaseRecaptcha() {
+    if (!firebaseEnabled) return;
+    if (recaptchaVerifier) return;
+
+    try {
+      recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+        'size': 'invisible',
+        'callback': (response) => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          showToast('Security Expired', 'reCAPTCHA expired. Please request OTP again.', 'warning');
+        }
+      });
+      console.log("reCAPTCHA Verifier initialized.");
+    } catch (e) {
+      console.error("Failed to initialize RecaptchaVerifier:", e);
+    }
+  }
+
   // --- APPLICATION STATE ---
   let appState = {
     theme: 'dark',
@@ -142,41 +189,56 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 2. SINGLE PAGE ROUTER ---
 
   function initRouter() {
-    // Nav links
-    document.querySelectorAll('[data-view]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
+    // Nav links event delegation
+    document.addEventListener('click', (e) => {
+      const trigger = e.target.closest('[data-view]');
+      if (trigger) {
         e.preventDefault();
         const targetView = trigger.getAttribute('data-view');
         navigate(targetView);
-      });
+      }
     });
 
     // Guard view injector
     const guardConsoleContainer = document.getElementById('guard-main-injector');
-    const guardScannerContent = document.getElementById('admin-view-scanner').innerHTML;
-    if (guardConsoleContainer) {
-      guardConsoleContainer.innerHTML = guardScannerContent;
+    const adminScannerEl = document.getElementById('admin-view-scanner');
+    if (guardConsoleContainer && adminScannerEl) {
+      guardConsoleContainer.innerHTML = adminScannerEl.innerHTML;
       // Re-setup the guard scan trigger inside the guard gate view
       setupGuardScannerLogic(guardConsoleContainer);
     }
 
-    // Direct dashboard view triggers
-    document.querySelectorAll('[data-dashview]').forEach(item => {
-      item.addEventListener('click', () => {
+    // Direct dashboard view triggers delegation
+    document.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-dashview]');
+      if (item) {
         document.querySelectorAll('[data-dashview]').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         const dashView = item.getAttribute('data-dashview');
         showDashboardSubview(dashView);
-      });
+      }
     });
 
-    document.querySelectorAll('[data-adminview]').forEach(item => {
-      item.addEventListener('click', () => {
+    // Central empty state Request Pass CTA click handler delegation
+    document.addEventListener('click', (e) => {
+      const btnGoRequestPass = e.target.closest('#btn-go-request-pass');
+      if (btnGoRequestPass) {
+        const applyPassItem = document.querySelector('[data-dashview="apply-pass"]');
+        if (applyPassItem) {
+          applyPassItem.click();
+        }
+      }
+    });
+
+    // Admin view triggers delegation
+    document.addEventListener('click', (e) => {
+      const item = e.target.closest('[data-adminview]');
+      if (item) {
         document.querySelectorAll('[data-adminview]').forEach(el => el.classList.remove('active'));
         item.classList.add('active');
         const adminView = item.getAttribute('data-adminview');
         showAdminSubview(adminView);
-      });
+      }
     });
 
     // Handle home screen routing from active state
@@ -185,6 +247,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function navigate(viewName) {
+    // Resolve CTA aliases
+    if (viewName === 'register-cta') {
+      if (appState.token) {
+        viewName = appState.role === 'ROLE_ADMIN' ? 'admin-dashboard' : 'visitor-dashboard';
+      } else {
+        viewName = 'register';
+      }
+    } else if (viewName === 'apply-pass-cta') {
+      if (appState.token) {
+        if (appState.role === 'ROLE_ADMIN') {
+          viewName = 'admin-dashboard';
+        } else {
+          viewName = 'visitor-dashboard';
+          setTimeout(() => {
+            const applyPassItem = document.querySelector('[data-dashview="apply-pass"]');
+            if (applyPassItem) applyPassItem.click();
+          }, 50);
+        }
+      } else {
+        viewName = 'login';
+      }
+    } else if (viewName === 'download-pass-cta') {
+      if (appState.token) {
+        if (appState.role === 'ROLE_ADMIN') {
+          viewName = 'admin-dashboard';
+        } else {
+          viewName = 'visitor-dashboard';
+          setTimeout(() => {
+            const activePassItem = document.querySelector('[data-dashview="active-pass"]');
+            if (activePassItem) activePassItem.click();
+          }, 50);
+        }
+      } else {
+        viewName = 'login';
+      }
+    }
+
     // Hide all views
     document.querySelectorAll('.app-view').forEach(view => view.classList.add('hidden'));
 
@@ -218,7 +317,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (viewName === 'admin-dashboard') {
       loadAdminDashboard();
     } else if (viewName === 'guard') {
-      resetGuardConsole(document.getElementById('guard-main-injector'));
+      const guardInjector = document.getElementById('guard-main-injector');
+      if (guardInjector) {
+        resetGuardConsole(guardInjector);
+      }
     }
 
     updateNavigationStates();
@@ -234,7 +336,6 @@ document.addEventListener('DOMContentLoaded', () => {
       mainNav.innerHTML = `
         <li><a href="#" class="nav-link" data-view="home">Home</a></li>
         <li><a href="#" class="nav-link" data-view="${dashView}">Dashboard</a></li>
-        <li><a href="#" class="nav-link" data-view="guard">Checkpoint</a></li>
       `;
       authBox.innerHTML = `
         <button class="btn-secondary" id="btn-header-logout" style="padding:0.5rem 1rem;">Logout</button>
@@ -249,28 +350,12 @@ document.addEventListener('DOMContentLoaded', () => {
         <li><a href="#" class="nav-link active" data-view="home">Home</a></li>
         <li><a href="#" class="nav-link" data-view="register">Apply Pass</a></li>
         <li><a href="#" class="nav-link" data-view="login">Sign In</a></li>
-        <li><a href="#" class="nav-link" data-view="guard">Security Checkpoint</a></li>
       `;
       authBox.innerHTML = `
         <a href="#" class="btn-primary" data-view="login">Sign In</a>
       `;
       clearSessionTimeout();
     }
-
-    // Reattach listeners to new nav links
-    document.querySelectorAll('#main-nav-links [data-view]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        const targetView = trigger.getAttribute('data-view');
-        navigate(targetView);
-      });
-    });
-    document.querySelectorAll('#auth-buttons-container [data-view]').forEach(trigger => {
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        navigate(trigger.getAttribute('data-view'));
-      });
-    });
   }
 
   function showDashboardSubview(subview) {
@@ -304,7 +389,10 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (subview === 'dashboard') {
       loadAdminDashboardStats();
     } else if (subview === 'scanner') {
-      resetGuardConsole(document.querySelector('.admin-main'));
+      const adminMain = document.querySelector('.admin-main');
+      if (adminMain) {
+        resetGuardConsole(adminMain);
+      }
     }
   }
 
@@ -774,19 +862,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginSendOtpBtn = document.getElementById('btn-login-send-otp');
     if (loginSendOtpBtn) {
       loginSendOtpBtn.addEventListener('click', async () => {
-        const username = document.getElementById('login-username').value;
+        const username = document.getElementById('login-username').value.trim();
         if (!username) {
           showToast('Input Required', 'Please enter your email or mobile number to send OTP.', 'error');
           return;
         }
 
-        try {
-          loginSendOtpBtn.disabled = true;
-          const res = await apiRequest('/api/auth/otp/send', 'POST', { destination: username });
-          showToast('OTP Sent', `OTP code sent (Code: ${res.mockOtp || 'XXXXXX'}).`, 'success');
-        } catch (e) {
-          showToast('OTP Error', e.message, 'error');
-          loginSendOtpBtn.disabled = false;
+        const isPhoneNumber = /^\+?[0-9]{10,15}$/.test(username);
+
+        if (firebaseEnabled && isPhoneNumber) {
+          let phoneNumber = username;
+          if (!phoneNumber.startsWith('+')) {
+            phoneNumber = '+91' + phoneNumber;
+          }
+
+          try {
+            loginSendOtpBtn.disabled = true;
+            loginSendOtpBtn.innerHTML = 'Sending SMS...';
+            initFirebaseRecaptcha();
+
+            confirmationResult = await firebase.auth().signInWithPhoneNumber(phoneNumber, recaptchaVerifier);
+            showToast('Firebase OTP Sent', 'A verification code has been sent via SMS to ' + phoneNumber, 'success');
+            loginSendOtpBtn.innerHTML = 'Resend OTP';
+            loginSendOtpBtn.disabled = false;
+          } catch (e) {
+            showToast('SMS Request Failed', e.message, 'error');
+            loginSendOtpBtn.disabled = false;
+            loginSendOtpBtn.innerHTML = 'Request OTP';
+            if (recaptchaVerifier) {
+              recaptchaVerifier.render().then(widgetId => {
+                grecaptcha.reset(widgetId);
+              });
+            }
+          }
+        } else {
+          try {
+            loginSendOtpBtn.disabled = true;
+            const res = await apiRequest('/api/auth/otp/send', 'POST', { destination: username });
+            showToast('OTP Sent', `OTP code sent (Code: ${res.mockOtp || 'XXXXXX'}).`, 'success');
+            loginSendOtpBtn.disabled = false;
+          } catch (e) {
+            showToast('OTP Error', e.message, 'error');
+            loginSendOtpBtn.disabled = false;
+          }
         }
       });
     }
@@ -815,10 +933,20 @@ document.addEventListener('DOMContentLoaded', () => {
             loginRes = await apiRequest('/api/auth/login', 'POST', { username, password });
           } else {
             const otp = document.getElementById('login-otp').value;
-            // Verify OTP first
-            await apiRequest('/api/auth/otp/verify', 'POST', { destination: username, otp });
-            // Direct mock bypass login if verified
-            loginRes = await mockOtpBypassLogin(username);
+            if (firebaseEnabled && confirmationResult) {
+              try {
+                const userCredential = await confirmationResult.confirm(otp);
+                const idToken = await userCredential.user.getIdToken();
+                loginRes = await apiRequest('/api/auth/firebase-login', 'POST', { idToken });
+              } catch (e) {
+                throw new Error("Invalid OTP code or Firebase validation failed: " + e.message);
+              }
+            } else {
+              // Verify OTP first
+              await apiRequest('/api/auth/otp/verify', 'POST', { destination: username, otp });
+              // Direct mock bypass login if verified
+              loginRes = await mockOtpBypassLogin(username);
+            }
           }
 
           // Successful authentication
@@ -846,6 +974,172 @@ document.addEventListener('DOMContentLoaded', () => {
           submitBtn.disabled = false;
           submitBtn.innerHTML = 'Sign In';
         }
+      });
+    }
+
+    // Google / Apple Login Setup
+    const runGoogleSimulation = async () => {
+      showToast('OAuth Config Issue', 'Firebase issue detected. Running simulated Google login...', 'warning');
+      try {
+        const response = await fetch('/api/auth/firebase-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: 'mock-firebase-token-guest.visitor@gmail.com' })
+        });
+        const data = await response.json();
+        if (data.success) {
+          appState.token = data.token;
+          appState.role = data.role;
+          appState.email = data.email;
+          appState.fullName = data.fullName || 'Google User';
+
+          localStorage.setItem('nalco_token', appState.token);
+          localStorage.setItem('nalco_role', appState.role);
+          localStorage.setItem('nalco_email', appState.email);
+          localStorage.setItem('nalco_fullname', appState.fullName);
+
+          showToast('OAuth Access Granted', 'Logged in via Simulated Google Identity.', 'success');
+          navigate('visitor-dashboard');
+        } else {
+          showToast('OAuth Sign In Failed', data.message, 'error');
+        }
+      } catch (err) {
+        showToast('OAuth Sign In Failed', err.message, 'error');
+      }
+    };
+
+    const runAppleSimulation = async () => {
+      showToast('OAuth Config Issue', 'Firebase issue detected. Running simulated Apple ID login...', 'warning');
+      try {
+        const response = await fetch('/api/auth/firebase-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: 'mock-firebase-token-guest.visitor@apple.com' })
+        });
+        const data = await response.json();
+        if (data.success) {
+          appState.token = data.token;
+          appState.role = data.role;
+          appState.email = data.email;
+          appState.fullName = data.fullName || 'Apple User';
+
+          localStorage.setItem('nalco_token', appState.token);
+          localStorage.setItem('nalco_role', appState.role);
+          localStorage.setItem('nalco_email', appState.email);
+          localStorage.setItem('nalco_fullname', appState.fullName);
+
+          showToast('OAuth Access Granted', 'Logged in via Simulated Apple ID System.', 'success');
+          navigate('visitor-dashboard');
+        } else {
+          showToast('OAuth Sign In Failed', data.message, 'error');
+        }
+      } catch (err) {
+        showToast('OAuth Sign In Failed', err.message, 'error');
+      }
+    };
+
+    const socialConfigs = [
+      { googleId: 'btn-google-login', appleId: 'btn-apple-login' },
+      { googleId: 'btn-google-register', appleId: 'btn-apple-register' }
+    ];
+
+    socialConfigs.forEach(({ googleId, appleId }) => {
+      const btnGoogle = document.getElementById(googleId);
+      const btnApple = document.getElementById(appleId);
+
+      if (btnGoogle) {
+        btnGoogle.addEventListener('click', async () => {
+          if (firebaseEnabled) {
+            showToast('OAuth Integration', 'Opening Google Authentication Popup...', 'success');
+            try {
+              const provider = new firebase.auth.GoogleAuthProvider();
+              const result = await firebase.auth().signInWithPopup(provider);
+              const idToken = await result.user.getIdToken();
+              
+              showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
+              const response = await fetch('/api/auth/firebase-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken })
+              });
+              const data = await response.json();
+              if (data.success) {
+                appState.token = data.token;
+                appState.role = data.role;
+                appState.email = data.email;
+                appState.fullName = data.fullName || 'Google User';
+
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
+
+                showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
+                navigate('visitor-dashboard');
+              } else {
+                showToast('OAuth Sign In Failed', data.message, 'error');
+              }
+            } catch (err) {
+              const msg = err.message || '';
+              console.warn("Firebase Google OAuth failed. Running simulation fallback. Error:", err);
+              await runGoogleSimulation();
+            }
+          } else {
+            await runGoogleSimulation();
+          }
+        });
+      }
+
+      if (btnApple) {
+        btnApple.addEventListener('click', async () => {
+          if (firebaseEnabled) {
+            showToast('OAuth Integration', 'Opening Apple Authentication Popup...', 'success');
+            try {
+              const provider = new firebase.auth.OAuthProvider('apple.com');
+              const result = await firebase.auth().signInWithPopup(provider);
+              const idToken = await result.user.getIdToken();
+              
+              showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
+              const response = await fetch('/api/auth/firebase-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken: idToken })
+              });
+              const data = await response.json();
+              if (data.success) {
+                appState.token = data.token;
+                appState.role = data.role;
+                appState.email = data.email;
+                appState.fullName = data.fullName || 'Apple User';
+
+                localStorage.setItem('nalco_token', appState.token);
+                localStorage.setItem('nalco_role', appState.role);
+                localStorage.setItem('nalco_email', appState.email);
+                localStorage.setItem('nalco_fullname', appState.fullName);
+
+                showToast('OAuth Access Granted', 'Logged in via Apple ID System.', 'success');
+                navigate('visitor-dashboard');
+              } else {
+                showToast('OAuth Sign In Failed', data.message, 'error');
+              }
+            } catch (err) {
+              const msg = err.message || '';
+              console.warn("Firebase Apple OAuth failed. Running simulation fallback. Error:", err);
+              await runAppleSimulation();
+            }
+          } else {
+            await runAppleSimulation();
+          }
+        });
+      }
+    });
+
+    // Brand link redirects to Home page
+    const brandLink = document.getElementById('nav-brand-link');
+    if (brandLink) {
+      brandLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        navigate('home');
       });
     }
 
@@ -934,7 +1228,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // VISITOR DASHBOARD: REQUEST PASS APPLICATION
     if (passReqForm) {
-      passReqForm.addEventListener('submit', async (e) => {
+      passReqForm.addEventListener('submit', (e) => {
         e.preventDefault();
 
         const department = document.getElementById('pass-department').value;
@@ -944,30 +1238,33 @@ document.addEventListener('DOMContentLoaded', () => {
         const expectedTimeIn = document.getElementById('pass-time-in').value;
         const expectedTimeOut = document.getElementById('pass-time-out').value;
 
-        try {
-          const submitBtn = document.getElementById('btn-submit-pass-req');
-          submitBtn.disabled = true;
-          submitBtn.innerHTML = 'Submitting permit...';
+        // Open Safety Induction Quiz before final submission
+        openQuiz(async () => {
+          try {
+            const submitBtn = document.getElementById('btn-submit-pass-req');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Submitting permit...';
 
-          const res = await apiRequest('/api/visitor/pass/apply', 'POST', {
-            department, employeeToMeet, visitDate, purpose, expectedTimeIn, expectedTimeOut
-          });
+            const res = await apiRequest('/api/visitor/pass/apply', 'POST', {
+              department, employeeToMeet, visitDate, purpose, expectedTimeIn, expectedTimeOut
+            });
 
-          showToast('Pass Requested', res.message, 'success');
-          passReqForm.reset();
-          
-          // Switch to active pass view
-          document.querySelectorAll('[data-dashview]').forEach(el => el.classList.remove('active'));
-          document.querySelector('[data-dashview="active-pass"]').classList.add('active');
-          showDashboardSubview('active-pass');
-          loadVisitorDashboard();
-        } catch (err) {
-          showToast('Application Refused', err.message, 'error');
-        } finally {
-          const submitBtn = document.getElementById('btn-submit-pass-req');
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = 'Submit Pass Request';
-        }
+            showToast('Pass Requested', res.message, 'success');
+            passReqForm.reset();
+            
+            // Switch to active pass view
+            document.querySelectorAll('[data-dashview]').forEach(el => el.classList.remove('active'));
+            document.querySelector('[data-dashview="active-pass"]').classList.add('active');
+            showDashboardSubview('active-pass');
+            loadVisitorDashboard();
+          } catch (err) {
+            showToast('Application Refused', err.message, 'error');
+          } finally {
+            const submitBtn = document.getElementById('btn-submit-pass-req');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Submit Pass Request';
+          }
+        });
       });
     }
 
@@ -1474,6 +1771,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 11. SECURITY GUARD SCANNER CONSOLE LOGIC ---
 
   function resetGuardConsole(parentView) {
+    if (!parentView) return;
     const manualInput = parentView.querySelector('#guard-qr-token-input');
     const defaultPrompt = parentView.querySelector('#guard-scan-default-prompt');
     const detailsCard = parentView.querySelector('#guard-scan-result-details');
@@ -1484,6 +1782,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setupGuardScannerLogic(containerNode) {
+    if (!containerNode) return;
     const triggerBtn = containerNode.querySelector('#btn-guard-trigger-scan');
     const inputEl = containerNode.querySelector('#guard-qr-token-input');
     
@@ -2219,6 +2518,366 @@ document.addEventListener('DOMContentLoaded', () => {
       ipAddress: '127.0.0.1'
     });
     localStorage.setItem('mock_audit_logs', JSON.stringify(logs));
+  }
+
+  // ==========================================================================
+  // 12. SAFETY INDUCTION QUIZ SYSTEM
+  // ==========================================================================
+  const safetyQuestionsPool = [
+    {
+      q: "Which PPE is mandatory in most plant areas?",
+      options: ["Cap only", "Helmet only", "Helmet, Safety Shoes, and Safety Goggles (as required)", "Sunglasses"],
+      correct: 2
+    },
+    {
+      q: "What should you do if you hear the emergency siren?",
+      options: ["Ignore it", "Continue your work", "Follow the instructions of the escort or move to the assembly point", "Run anywhere"],
+      correct: 2
+    },
+    {
+      q: "If you notice an unsafe condition, you should:",
+      options: ["Ignore it", "Take a photo and leave", "Inform your escort or plant official immediately", "Share it on social media"],
+      correct: 2
+    },
+    {
+      q: "Visitors should always:",
+      options: ["Walk alone", "Enter restricted areas freely", "Remain with their authorized escort", "Wander around the plant"],
+      correct: 2
+    },
+    {
+      q: "Mobile phone usage is:",
+      options: ["Allowed everywhere", "Allowed only where permitted by refinery rules", "Never allowed anywhere", "Mandatory"],
+      correct: 1
+    },
+    {
+      q: "What is the purpose of PPE?",
+      options: ["Improve appearance", "Increase speed", "Protect against workplace hazards", "Carry tools"],
+      correct: 2
+    },
+    {
+      q: "In case of fire, you should:",
+      options: ["Hide inside a room", "Raise the alarm and follow evacuation instructions", "Pour water on all fires", "Continue your visit"],
+      correct: 1
+    },
+    {
+      q: "Before entering a restricted area, you must:",
+      options: ["Take a selfie", "Obtain proper authorization and wear required PPE", "Enter quietly", "Ask another visitor"],
+      correct: 1
+    },
+    {
+      q: "If you feel unwell during your visit, you should:",
+      options: ["Ignore it", "Go home without informing anyone", "Inform your escort immediately", "Continue walking"],
+      correct: 2
+    },
+    {
+      q: "Photography inside the refinery is:",
+      options: ["Always allowed", "Allowed for everyone", "Only with prior permission", "Compulsory"],
+      correct: 2
+    },
+    {
+      q: "What should you do if a chemical spill occurs nearby?",
+      options: ["Walk through it", "Touch it to check", "Stay away and inform the concerned authority", "Ignore it"],
+      correct: 2
+    },
+    {
+      q: "Before entering the refinery, every visitor should:",
+      options: ["Memorize the map only", "Bring food", "Understand the basic safety instructions and emergency procedures", "Wear casual slippers"],
+      correct: 2
+    },
+    {
+      q: "Which of the following is the safest action if you find an unattended suspicious package inside the plant?",
+      options: ["Open it to identify the owner", "Move it to a safe place", "Do not touch it; inform Security immediately", "Throw it in a dustbin"],
+      correct: 2
+    },
+    {
+      q: "If an emergency evacuation is announced, visitors should:",
+      options: ["Use the nearest lift", "Wait until everyone leaves", "Follow the designated evacuation route under the escort's guidance", "Return to their vehicle immediately"],
+      correct: 2
+    },
+    {
+      q: "Which gas is commonly used in portable fire extinguishers for electrical fires?",
+      options: ["Oxygen", "Nitrogen", "Carbon Dioxide (CO₂)", "Hydrogen"],
+      correct: 2
+    },
+    {
+      q: "Why is it important to stay within marked pedestrian walkways inside the refinery?",
+      options: ["They are shorter routes", "They are cleaner", "They reduce the risk of accidents involving moving vehicles and equipment", "They lead directly to the exit"],
+      correct: 2
+    },
+    {
+      q: "If you accidentally enter a barricaded or restricted area, what should you do?",
+      options: ["Continue until someone stops you", "Take photographs", "Leave immediately and inform your escort or security", "Ignore the barricades"],
+      correct: 2
+    },
+    {
+      q: "Why should loose clothing, scarves, or dangling accessories be avoided near rotating machinery?",
+      options: ["They become dirty", "They reduce comfort", "They can get caught in moving equipment, causing serious injury", "They affect communication"],
+      correct: 2
+    }
+  ];
+
+  let quizState = {
+    questions: [],
+    currentIdx: 0,
+    answers: {},
+    timerInterval: null,
+    secondsRemaining: 600,
+    onPassedCallback: null
+  };
+
+  const quizModal = document.getElementById('safety-quiz-modal');
+  const quizIntroPanel = document.getElementById('quiz-intro-panel');
+  const quizPlayPanel = document.getElementById('quiz-play-panel');
+  const quizResultPanel = document.getElementById('quiz-result-panel');
+  const qTextEl = document.getElementById('quiz-question-text');
+  const qOptionsListEl = document.getElementById('quiz-options-list');
+  const qProgressTextEl = document.getElementById('quiz-progress-text');
+  const qProgressBarEl = document.getElementById('quiz-progress-bar');
+  const qTimerClockEl = document.getElementById('quiz-timer-clock');
+  const correctionsSection = document.getElementById('quiz-corrections-section');
+  const correctionsListEl = document.getElementById('quiz-corrections-list');
+  
+  const btnStartQuiz = document.getElementById('btn-start-quiz');
+  const btnQuizPrev = document.getElementById('btn-quiz-prev');
+  const btnQuizNext = document.getElementById('btn-quiz-next');
+  const btnQuizRetry = document.getElementById('btn-quiz-retry');
+  const btnQuizProceed = document.getElementById('btn-quiz-proceed');
+  const btnCloseQuiz = document.getElementById('btn-close-quiz-modal');
+
+  function openQuiz(onPassed) {
+    // Reset state
+    quizState.questions = [...safetyQuestionsPool].sort(() => 0.5 - Math.random()).slice(0, 10);
+    quizState.currentIdx = 0;
+    quizState.answers = {};
+    quizState.secondsRemaining = 600;
+    quizState.onPassedCallback = onPassed;
+    
+    if (quizState.timerInterval) clearInterval(quizState.timerInterval);
+
+    // Reset panels
+    quizIntroPanel.classList.remove('hidden');
+    quizPlayPanel.classList.add('hidden');
+    quizResultPanel.classList.add('hidden');
+    correctionsSection.classList.add('hidden');
+
+    btnQuizRetry.style.display = 'none';
+    btnQuizProceed.style.display = 'none';
+
+    // Show modal
+    quizModal.classList.remove('hidden');
+  }
+
+  function closeQuiz() {
+    if (quizState.timerInterval) clearInterval(quizState.timerInterval);
+    quizModal.classList.add('hidden');
+  }
+
+  function startQuizPlay() {
+    quizIntroPanel.classList.add('hidden');
+    quizPlayPanel.classList.remove('hidden');
+    
+    // Start countdown timer
+    updateTimerDisplay();
+    quizState.timerInterval = setInterval(() => {
+      quizState.secondsRemaining--;
+      updateTimerDisplay();
+      if (quizState.secondsRemaining <= 0) {
+        clearInterval(quizState.timerInterval);
+        submitQuiz(true); // Forced submission on timeout
+      }
+    }, 1000);
+
+    renderQuestion();
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(quizState.secondsRemaining / 60);
+    const secs = quizState.secondsRemaining % 60;
+    qTimerClockEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  function renderQuestion() {
+    const idx = quizState.currentIdx;
+    const qData = quizState.questions[idx];
+
+    qProgressTextEl.textContent = `Question ${idx + 1} of 10`;
+    qProgressBarEl.style.width = `${((idx + 1) / 10) * 100}%`;
+    qTextEl.textContent = qData.q;
+
+    // Load options
+    qOptionsListEl.innerHTML = '';
+    qData.options.forEach((optText, optIdx) => {
+      const card = document.createElement('div');
+      card.className = 'quiz-option-card';
+      if (quizState.answers[idx] === optIdx) {
+        card.classList.add('selected');
+      }
+
+      const letter = String.fromCharCode(65 + optIdx); // A, B, C, D
+      card.innerHTML = `
+        <div class="quiz-option-letter">${letter}</div>
+        <div class="quiz-option-text">${optText}</div>
+      `;
+
+      card.addEventListener('click', () => {
+        // Select option
+        document.querySelectorAll('.quiz-option-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        quizState.answers[idx] = optIdx;
+      });
+
+      qOptionsListEl.appendChild(card);
+    });
+
+    // Control buttons state
+    btnQuizPrev.disabled = idx === 0;
+    if (idx === 9) {
+      btnQuizNext.innerHTML = 'Submit Quiz';
+      btnQuizNext.className = 'btn-success';
+    } else {
+      btnQuizNext.innerHTML = 'Next';
+      btnQuizNext.className = 'btn-primary';
+    }
+  }
+
+  function submitQuiz(isTimeout = false) {
+    if (quizState.timerInterval) clearInterval(quizState.timerInterval);
+
+    // Calculate score
+    let score = 0;
+    const incorrects = [];
+
+    quizState.questions.forEach((qData, idx) => {
+      const selected = quizState.answers[idx];
+      const correct = qData.correct;
+      if (selected === correct) {
+        score++;
+      } else {
+        incorrects.push({
+          question: qData.q,
+          options: qData.options,
+          selected: selected !== undefined ? selected : -1,
+          correct: correct
+        });
+      }
+    });
+
+    quizPlayPanel.classList.add('hidden');
+    quizResultPanel.classList.remove('hidden');
+
+    const resultBadgeWrapper = document.getElementById('quiz-result-badge-wrapper');
+    const resultTitle = document.getElementById('quiz-result-title');
+    const resultSubtitle = document.getElementById('quiz-result-subtitle');
+
+    if (score >= 8) {
+      // Pass
+      resultBadgeWrapper.style.background = 'rgba(74, 222, 128, 0.1)';
+      resultBadgeWrapper.style.border = '2px solid #4ade80';
+      resultBadgeWrapper.innerHTML = `
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      `;
+      resultTitle.textContent = 'Safety Induction Passed';
+      resultTitle.style.color = '#4ade80';
+      resultSubtitle.textContent = `Excellent job! You scored ${score}/10 (${score * 10}%). You are certified to enter NALCO refinery areas.`;
+      
+      btnQuizRetry.style.display = 'none';
+      btnQuizProceed.style.display = 'block';
+      correctionsSection.classList.add('hidden');
+    } else {
+      // Fail
+      resultBadgeWrapper.style.background = 'rgba(239, 68, 68, 0.1)';
+      resultBadgeWrapper.style.border = '2px solid #ef4444';
+      resultBadgeWrapper.innerHTML = `
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      `;
+      resultTitle.textContent = 'Retrial Required';
+      resultTitle.style.color = '#ef4444';
+      
+      const reason = isTimeout ? 'Time limit expired!' : `You scored ${score}/10 (${score * 10}%).`;
+      resultSubtitle.textContent = `${reason} A minimum score of 80% (8/10) is required to proceed. Please review the corrections below.`;
+
+      // Render corrections
+      correctionsListEl.innerHTML = '';
+      incorrects.forEach((item) => {
+        const itemEl = document.createElement('div');
+        itemEl.className = 'correction-item';
+        
+        const selectedText = item.selected !== -1 ? `${String.fromCharCode(65 + item.selected)}. ${item.options[item.selected]}` : 'None';
+        const correctText = `${String.fromCharCode(65 + item.correct)}. ${item.options[item.correct]}`;
+
+        itemEl.innerHTML = `
+          <div class="correction-q">${item.question}</div>
+          <div class="correction-ans wrong">
+            <span>❌ Selected:</span>
+            <span>${selectedText}</span>
+          </div>
+          <div class="correction-ans correct">
+            <span>✅ Correct:</span>
+            <span>${correctText}</span>
+          </div>
+        `;
+        correctionsListEl.appendChild(itemEl);
+      });
+
+      correctionsSection.classList.remove('hidden');
+      btnQuizRetry.style.display = 'block';
+      btnQuizProceed.style.display = 'none';
+    }
+  }
+
+  // Event Listeners
+  if (btnStartQuiz) {
+    btnStartQuiz.addEventListener('click', startQuizPlay);
+  }
+
+  if (btnQuizPrev) {
+    btnQuizPrev.addEventListener('click', () => {
+      if (quizState.currentIdx > 0) {
+        quizState.currentIdx--;
+        renderQuestion();
+      }
+    });
+  }
+
+  if (btnQuizNext) {
+    btnQuizNext.addEventListener('click', () => {
+      // Check if user answered
+      if (quizState.answers[quizState.currentIdx] === undefined) {
+        showToast('Answer Required', 'Please select an option before moving forward.', 'warning');
+        return;
+      }
+
+      if (quizState.currentIdx < 9) {
+        quizState.currentIdx++;
+        renderQuestion();
+      } else {
+        submitQuiz();
+      }
+    });
+  }
+
+  if (btnQuizRetry) {
+    btnQuizRetry.addEventListener('click', () => {
+      openQuiz(quizState.onPassedCallback);
+    });
+  }
+
+  if (btnQuizProceed) {
+    btnQuizProceed.addEventListener('click', () => {
+      closeQuiz();
+      if (quizState.onPassedCallback) {
+        quizState.onPassedCallback();
+      }
+    });
+  }
+
+  if (btnCloseQuiz) {
+    btnCloseQuiz.addEventListener('click', closeQuiz);
   }
 
 });
