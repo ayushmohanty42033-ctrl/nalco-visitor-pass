@@ -1107,37 +1107,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (btnGoogle) {
         btnGoogle.addEventListener('click', async () => {
           if (firebaseEnabled) {
-            showToast('OAuth Integration', 'Opening Google Authentication Gateway...', 'info');
+            showToast('OAuth Integration', 'Redirecting to Google Secure Gate...', 'info');
             try {
               const provider = new firebase.auth.GoogleAuthProvider();
-              const result = await firebase.auth().signInWithPopup(provider);
-              const idToken = await result.user.getIdToken();
-              
-              showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
-              const response = await fetch('/api/auth/firebase-login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ idToken: idToken })
-              });
-              const data = await response.json();
-              if (data.success) {
-                appState.token = data.token;
-                appState.role = data.role;
-                appState.email = data.email;
-                appState.fullName = data.fullName || 'Google User';
-
-                localStorage.setItem('nalco_token', appState.token);
-                localStorage.setItem('nalco_role', appState.role);
-                localStorage.setItem('nalco_email', appState.email);
-                localStorage.setItem('nalco_fullname', appState.fullName);
-
-                showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
-                navigate('visitor-dashboard');
-              } else {
-                showToast('OAuth Sign In Failed', data.message, 'error');
-              }
+              await firebase.auth().signInWithRedirect(provider);
             } catch (err) {
-              console.warn("Firebase Google OAuth failed. Running simulation fallback. Error:", err);
+              console.warn("Firebase Google OAuth redirect initiation failed. Error:", err);
               await runGoogleSimulation();
             }
           } else {
@@ -2904,8 +2879,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if (btnCloseQuiz) {
-    btnCloseQuiz.addEventListener('click', closeQuiz);
+  }
+
+  // --- Check for Firebase Redirect Auth result on page load ---
+  if (firebaseEnabled) {
+    firebase.auth().getRedirectResult().then(async (result) => {
+      if (result && result.user) {
+        showToast('Authenticating', 'Google authentication redirect successful.', 'success');
+        try {
+          const idToken = await result.user.getIdToken();
+          showToast('Authenticating', 'Verifying details with NALCO secure gate...', 'success');
+          const response = await fetch('/api/auth/firebase-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken: idToken })
+          });
+          const data = await response.json();
+          if (data.success) {
+            appState.token = data.token;
+            appState.role = data.role;
+            appState.email = data.email;
+            appState.fullName = data.fullName || 'Google User';
+
+            localStorage.setItem('nalco_token', appState.token);
+            localStorage.setItem('nalco_role', appState.role);
+            localStorage.setItem('nalco_email', appState.email);
+            localStorage.setItem('nalco_fullname', appState.fullName);
+
+            showToast('OAuth Access Granted', 'Logged in via Google Identity.', 'success');
+            navigate('visitor-dashboard');
+          } else {
+            showToast('OAuth Sign In Failed', data.message, 'error');
+          }
+        } catch (err) {
+          console.warn("Firebase Google OAuth redirect callback verification failed. Error:", err);
+          showToast('OAuth Integration Failed', err.message, 'error');
+        }
+      }
+    }).catch((error) => {
+      console.warn("Firebase redirect auth failed on load:", error);
+      // Fallback to simulated login if they had an issue with redirect callback
+      if (error.code !== 'auth/web-storage-unsupported') {
+        runGoogleSimulation();
+      }
+    });
   }
 
 });
