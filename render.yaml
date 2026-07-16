@@ -1,0 +1,37 @@
+databases:
+  - name: nalco-db
+    databaseName: nalco_visitor_pass
+    user: nalco_admin
+    plan: free
+
+services:
+  - type: web
+    name: nalco-visitor-pass
+    env: docker
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: org.postgresql.Driver
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: nalco-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: nalco-db
+          property: password
+      - key: DB_HOST
+        fromDatabase:
+          name: nalco-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: nalco-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: nalco-db
+          property: database
+      - key: SPRING_DATASOURCE_URL
+        value: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
