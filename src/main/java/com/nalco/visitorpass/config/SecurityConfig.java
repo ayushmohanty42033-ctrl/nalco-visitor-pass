@@ -39,7 +39,9 @@ public class SecurityConfig {
                     "/images/**",
                     "/favicon.ico",
                     "/h2-console/**",
-                    "/api/auth/**"
+                    "/api/auth/**",
+                    "/api/admin/departments",
+                    "/api/admin/employees"
                 ).permitAll()
                 .requestMatchers("/api/visitor/**").hasAnyRole("VISITOR", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
