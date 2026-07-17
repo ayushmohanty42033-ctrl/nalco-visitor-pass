@@ -11,8 +11,8 @@ services:
     plan: free
     healthCheckPath: /
     envVars:
-      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
-        value: org.postgresql.Driver
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
       - key: SPRING_DATASOURCE_USERNAME
         fromDatabase:
           name: nalco-db
@@ -33,5 +33,3 @@ services:
         fromDatabase:
           name: nalco-db
           property: database
-      - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
