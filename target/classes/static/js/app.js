@@ -120,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     blacklist: []
   };
 
+  let runGoogleSimulation = null;
+  let runAppleSimulation = null;
+
   // Backend endpoint base
   const API_BASE = window.location.origin;
 
@@ -1035,7 +1038,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Google / Apple Login Setup
-    const runGoogleSimulation = async () => {
+    runGoogleSimulation = async () => {
       showToast('OAuth Config Issue', 'Firebase issue detected. Running simulated Google login...', 'warning');
       try {
         const response = await fetch('/api/auth/firebase-login', {
@@ -1065,7 +1068,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const runAppleSimulation = async () => {
+    runAppleSimulation = async () => {
       showToast('OAuth Config Issue', 'Firebase issue detected. Running simulated Apple ID login...', 'warning');
       try {
         const response = await fetch('/api/auth/firebase-login', {
@@ -2968,7 +2971,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
           if (!appState.token) {
             console.warn("Google OAuth redirect failed to establish session. Running simulated fallback...");
-            runGoogleSimulation();
+            if (typeof runGoogleSimulation === 'function') {
+              runGoogleSimulation();
+            }
           }
         }, 3500);
       }

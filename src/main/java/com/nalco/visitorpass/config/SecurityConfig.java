@@ -41,7 +41,8 @@ public class SecurityConfig {
                     "/h2-console/**",
                     "/api/auth/**",
                     "/api/admin/departments",
-                    "/api/admin/employees"
+                    "/api/admin/employees",
+                    "/error"
                 ).permitAll()
                 .requestMatchers("/api/visitor/**").hasAnyRole("VISITOR", "ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
